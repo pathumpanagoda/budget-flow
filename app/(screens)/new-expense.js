@@ -6,8 +6,10 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import { getCategories, getFunders, addExpense } from '../../services/firebaseService';
+import { useTheme } from '../../context/theme';
 
 export default function NewExpenseScreen() {
+  const { colors, isDarkMode } = useTheme();
   const { preSelectedCategory } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -83,40 +85,52 @@ export default function NewExpenseScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0F6E66" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.formContainer}>
         <Text style={styles.label}>Title</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            color: colors.text,
+          }]}
           value={title}
           onChangeText={setTitle}
           placeholder="Enter expense title"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.text}
         />
 
         <Text style={styles.label}>Amount</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            color: colors.text,
+          }]}
           value={amount}
           onChangeText={setAmount}
           placeholder="Enter amount"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.text}
           keyboardType="numeric"
         />
 
         <Text style={styles.label}>Description (Optional)</Text>
         <TextInput
-          style={[styles.input, styles.textArea]}
+          style={[styles.input, styles.textArea, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            color: colors.text,
+          }]}
           value={description}
           onChangeText={setDescription}
           placeholder="Enter expense description"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.text}
           multiline
           numberOfLines={4}
           textAlignVertical="top"
@@ -124,28 +138,34 @@ export default function NewExpenseScreen() {
 
         <Text style={styles.label}>Category</Text>
         <TouchableOpacity
-          style={styles.pickerButton}
+          style={[styles.pickerButton, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+          }]}
           onPress={() => setShowCategoryPicker(true)}
         >
-          <Text style={styles.pickerButtonText}>
+          <Text style={[styles.pickerButtonText, { color: colors.text }]}>
             {selectedCategory
               ? categories.find(cat => cat.id === selectedCategory)?.name
               : 'Select a category'}
           </Text>
-          <FontAwesome5 name="chevron-down" size={14} color="#757575" />
+          <FontAwesome5 name="chevron-down" size={14} color={colors.text} />
         </TouchableOpacity>
 
         <Text style={styles.label}>Assigned To (Optional)</Text>
         <TouchableOpacity
-          style={styles.pickerButton}
+          style={[styles.pickerButton, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+          }]}
           onPress={() => setShowFunderPicker(true)}
         >
-          <Text style={styles.pickerButtonText}>
+          <Text style={[styles.pickerButtonText, { color: colors.text }]}>
             {selectedFunder
               ? funders.find(f => f.id === selectedFunder)?.name
               : 'Select a funder'}
           </Text>
-          <FontAwesome5 name="chevron-down" size={14} color="#757575" />
+          <FontAwesome5 name="chevron-down" size={14} color={colors.text} />
         </TouchableOpacity>
 
         <Button
@@ -157,19 +177,19 @@ export default function NewExpenseScreen() {
       </View>
 
       {showCategoryPicker && (
-        <View style={styles.pickerOverlay}>
+        <View style={[styles.pickerOverlay, { backgroundColor: colors.overlay }]}>
           <Card style={styles.pickerCard}>
             <Text style={styles.pickerTitle}>Select Category</Text>
             {categories.map((category) => (
               <TouchableOpacity
                 key={category.id}
-                style={styles.pickerItem}
+                style={[styles.pickerItem, { borderBottomColor: colors.border }]}
                 onPress={() => {
                   setSelectedCategory(category.id);
                   setShowCategoryPicker(false);
                 }}
               >
-                <Text style={styles.pickerItemText}>{category.name}</Text>
+                <Text style={[styles.pickerItemText, { color: colors.text }]}>{category.name}</Text>
               </TouchableOpacity>
             ))}
             <Button
@@ -183,19 +203,19 @@ export default function NewExpenseScreen() {
       )}
 
       {showFunderPicker && (
-        <View style={styles.pickerOverlay}>
+        <View style={[styles.pickerOverlay, { backgroundColor: colors.overlay }]}>
           <Card style={styles.pickerCard}>
             <Text style={styles.pickerTitle}>Select Funder</Text>
             {funders.map((funder) => (
               <TouchableOpacity
                 key={funder.id}
-                style={styles.pickerItem}
+                style={[styles.pickerItem, { borderBottomColor: colors.border }]}
                 onPress={() => {
                   setSelectedFunder(funder.id);
                   setShowFunderPicker(false);
                 }}
               >
-                <Text style={styles.pickerItemText}>{funder.name}</Text>
+                <Text style={[styles.pickerItemText, { color: colors.text }]}>{funder.name}</Text>
               </TouchableOpacity>
             ))}
             <Button
@@ -214,7 +234,6 @@ export default function NewExpenseScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
   },
   loadingContainer: {
     flex: 1,
@@ -228,23 +247,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
-    color: '#212121',
   },
   input: {
-    backgroundColor: 'white',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   textArea: {
     height: 100,
     paddingTop: 12,
   },
   pickerButton: {
-    backgroundColor: 'white',
     borderRadius: 8,
     padding: 12,
     flexDirection: 'row',
@@ -252,11 +267,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   pickerButtonText: {
     fontSize: 16,
-    color: '#212121',
   },
   submitButton: {
     marginTop: 8,
@@ -267,7 +280,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -284,7 +296,6 @@ const styles = StyleSheet.create({
   pickerItem: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
   },
   pickerItemText: {
     fontSize: 16,

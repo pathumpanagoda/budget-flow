@@ -3,9 +3,17 @@ import { Text, View } from './Themed';
 import { useTheme } from '../context/theme';
 
 export default function Card({ children, style, title }) {
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   return (
-    <View style={[styles.card, { backgroundColor: colors.card }, style]}>
+    <View style={[
+      styles.card, 
+      { 
+        backgroundColor: colors.card,
+        shadowColor: isDarkMode ? '#000' : '#000',
+        borderColor: colors.border,
+      }, 
+      style
+    ]}>
       {title && <Text style={styles.title}>{title}</Text>}
       {children}
     </View>
@@ -41,7 +49,6 @@ const styles = StyleSheet.create({
     padding: 16,
     marginVertical: 8,
     marginHorizontal: 16,
-    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 1,
@@ -49,6 +56,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.22,
     shadowRadius: 2.22,
     elevation: 3,
+    borderWidth: 1,
   },
   title: {
     fontSize: 18,

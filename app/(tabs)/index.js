@@ -9,8 +9,10 @@ import Button from '../../components/Button';
 import CategoryItem from '../../components/CategoryItem';
 import ExpenseItem from '../../components/ExpenseItem';
 import { getCategories, getExpenses, getBudgetSummary } from '../../services/firebaseService';
+import { useTheme } from '../../context/theme';
 
 export default function HomeScreen() {
+  const { colors, isDarkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -107,7 +109,7 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0F6E66" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -116,123 +118,123 @@ export default function HomeScreen() {
     <>
       <StatusBar
         barStyle="light-content"
-        backgroundColor="#0F6E66"
+        backgroundColor={colors.primary}
         translucent={false}
       />
-    <ScrollView 
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <BudgetSummary
-        totalBudget={budgetSummary.totalBudget}
-        receivedFund={budgetSummary.receivedFund}
-      />
-      
-      <Card style={styles.sectionCard}>
-        <RNView style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Expense Status</Text>
-        </RNView>
-        <RNView style={styles.statusCardsContainer}>
-          <RNView style={[styles.statusCard, { backgroundColor: '#E0E0E0' }]}>
-            <Text style={styles.statusAmount}>Rs. {(statusTotals.pending || 0).toLocaleString()}</Text>
-            <Text style={styles.statusLabel}>Pending</Text>
-          </RNView>
-          <RNView style={[styles.statusCard, { backgroundColor: '#FFE0B2' }]}>
-            <Text style={styles.statusAmount}>Rs. {(statusTotals.tookOver || 0).toLocaleString()}</Text>
-            <Text style={styles.statusLabel}>Took Over</Text>
-          </RNView>
-          <RNView style={[styles.statusCard, { backgroundColor: '#C8E6C9' }]}>
-            <Text style={styles.statusAmount}>Rs. {(statusTotals.done || 0).toLocaleString()}</Text>
-            <Text style={styles.statusLabel}>Done</Text>
-          </RNView>
-          <RNView style={[styles.statusCard, { backgroundColor: '#E3F2FD' }]}>
-            <Text style={styles.statusAmount}>Rs. {(statusTotals.utilized || 0).toLocaleString()}</Text>
-            <Text style={styles.statusLabel}>Utilized</Text>
-          </RNView>
-        </RNView>
-      </Card>
-      
-      <Card style={styles.sectionCard}>
-        <RNView style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Categories</Text>
-          <Button 
-            title="Add Category" 
-            onPress={() => router.push('/new-category')}
-            variant="outline"
-            style={styles.addButton}
-          />
-        </RNView>
+      <ScrollView 
+        style={[styles.container, { backgroundColor: colors.background }]}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <BudgetSummary
+          totalBudget={budgetSummary.totalBudget}
+          receivedFund={budgetSummary.receivedFund}
+        />
         
-        {categories.length === 0 ? (
-          <RNView style={styles.emptyState}>
-            <FontAwesome5 name="list" size={24} color="#757575" />
-            <Text style={styles.emptyText}>No categories yet</Text>
-            <Text style={styles.emptySubtext}>Add categories to organize your expenses</Text>
+        <Card style={styles.sectionCard}>
+          <RNView style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Expense Status</Text>
           </RNView>
-        ) : (
-          categories.slice(0, 3).map((category) => (
-            <CategoryItem
-              key={category.id}
-              name={category.name}
-              totalExpenses={category.expenseCount || 0}
-              totalAmount={category.totalAmount || 0}
-              onPress={() => router.push(`/category/${category.id}`)}
+          <RNView style={styles.statusCardsContainer}>
+            <RNView style={[styles.statusCard, { backgroundColor: colors.border }]}>
+              <Text style={styles.statusAmount}>Rs. {(statusTotals.pending || 0).toLocaleString()}</Text>
+              <Text style={styles.statusLabel}>Pending</Text>
+            </RNView>
+            <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(255, 224, 178, 0.2)' : '#FFE0B2' }]}>
+              <Text style={styles.statusAmount}>Rs. {(statusTotals.tookOver || 0).toLocaleString()}</Text>
+              <Text style={styles.statusLabel}>Took Over</Text>
+            </RNView>
+            <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(200, 230, 201, 0.2)' : '#C8E6C9' }]}>
+              <Text style={styles.statusAmount}>Rs. {(statusTotals.done || 0).toLocaleString()}</Text>
+              <Text style={styles.statusLabel}>Done</Text>
+            </RNView>
+            <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(227, 242, 253, 0.2)' : '#E3F2FD' }]}>
+              <Text style={styles.statusAmount}>Rs. {(statusTotals.utilized || 0).toLocaleString()}</Text>
+              <Text style={styles.statusLabel}>Utilized</Text>
+            </RNView>
+          </RNView>
+        </Card>
+        
+        <Card style={styles.sectionCard}>
+          <RNView style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Categories</Text>
+            <Button 
+              title="Add Category" 
+              onPress={() => router.push('/new-category')}
+              variant="outline"
+              style={styles.addButton}
             />
-          ))
-        )}
-        
-        {categories.length > 3 && (
-          <Button
-            title="View All Categories"
-            onPress={() => router.push('/category')}
-            variant="outline"
-            style={styles.viewAllButton}
-          />
-        )}
-      </Card>
-      
-      <Card style={styles.sectionCard}>
-        <RNView style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Expenses</Text>
-          <Button 
-            title="Add Expense" 
-            onPress={() => router.push('/new-expense')}
-            variant="outline"
-            style={styles.addButton}
-          />
-        </RNView>
-        
-        {recentExpenses.length === 0 ? (
-          <RNView style={styles.emptyState}>
-            <FontAwesome5 name="receipt" size={24} color="#757575" />
-            <Text style={styles.emptyText}>No expenses yet</Text>
-            <Text style={styles.emptySubtext}>Add expenses to track your spending</Text>
           </RNView>
-        ) : (
-          recentExpenses.map((expense) => (
-            <ExpenseItem
-              key={expense.id}
-              title={expense.title}
-              amount={expense.amount}
-              status={expense.status}
-              assignedTo={expense.assignedTo}
-              onPress={() => router.push(`/expense/${expense.id}`)}
+          
+          {categories.length === 0 ? (
+            <RNView style={styles.emptyState}>
+              <FontAwesome5 name="list" size={24} color={colors.text} />
+              <Text style={styles.emptyText}>No categories yet</Text>
+              <Text style={styles.emptySubtext}>Add categories to organize your expenses</Text>
+            </RNView>
+          ) : (
+            categories.slice(0, 3).map((category) => (
+              <CategoryItem
+                key={category.id}
+                name={category.name}
+                totalExpenses={category.expenseCount || 0}
+                totalAmount={category.totalAmount || 0}
+                onPress={() => router.push(`/category/${category.id}`)}
+              />
+            ))
+          )}
+          
+          {categories.length > 3 && (
+            <Button
+              title="View All Categories"
+              onPress={() => router.push('/category')}
+              variant="outline"
+              style={styles.viewAllButton}
             />
-          ))
-        )}
+          )}
+        </Card>
         
-        {recentExpenses.length > 0 && (
-          <Button
-            title="View All Expenses"
-            onPress={() => router.push('/all-expenses')}
-            variant="outline"
-            style={styles.viewAllButton}
-          />
-        )}
-      </Card>
-    </ScrollView>
+        <Card style={styles.sectionCard}>
+          <RNView style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Expenses</Text>
+            <Button 
+              title="Add Expense" 
+              onPress={() => router.push('/new-expense')}
+              variant="outline"
+              style={styles.addButton}
+            />
+          </RNView>
+          
+          {recentExpenses.length === 0 ? (
+            <RNView style={styles.emptyState}>
+              <FontAwesome5 name="receipt" size={24} color={colors.text} />
+              <Text style={styles.emptyText}>No expenses yet</Text>
+              <Text style={styles.emptySubtext}>Add your first expense to get started</Text>
+            </RNView>
+          ) : (
+            recentExpenses.map((expense) => (
+              <ExpenseItem
+                key={expense.id}
+                title={expense.title}
+                amount={expense.amount}
+                status={expense.status}
+                assignedTo={expense.assignedTo}
+                onPress={() => router.push(`/expense/${expense.id}`)}
+              />
+            ))
+          )}
+          
+          {recentExpenses.length > 0 && (
+            <Button
+              title="View All Expenses"
+              onPress={() => router.push('/all-expenses')}
+              variant="outline"
+              style={styles.viewAllButton}
+            />
+          )}
+        </Card>
+      </ScrollView>
     </>
   );
 }
@@ -240,7 +242,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
   },
   loadingContainer: {
     flex: 1,
@@ -249,7 +250,6 @@ const styles = StyleSheet.create({
   },
   sectionCard: {
     marginTop: 16,
-    padding: 16,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -261,48 +261,42 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  addButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  viewAllButton: {
-    marginTop: 8,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#757575',
-    textAlign: 'center',
-  },
   statusCardsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     flexWrap: 'wrap',
-    gap: 8,
+    justifyContent: 'space-between',
   },
   statusCard: {
-    flex: 1,
-    minWidth: '48%',
+    width: '48%',
+    padding: 12,
     borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
+    marginBottom: 12,
   },
   statusAmount: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
   },
   statusLabel: {
     fontSize: 14,
+  },
+  addButton: {
+    width: 150,
+  },
+  viewAllButton: {
+    marginTop: 16,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 12,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    marginTop: 4,
   },
 }); 

@@ -4,8 +4,10 @@ import { Text, View } from '../../../components/Themed';
 import { router, useLocalSearchParams } from 'expo-router';
 import Button from '../../../components/Button';
 import { getCategories, updateCategory } from '../../../services/firebaseService';
+import { useTheme } from '../../../context/theme';
 
 export default function EditCategoryScreen() {
+  const { colors, isDarkMode } = useTheme();
   const { id } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -65,30 +67,38 @@ export default function EditCategoryScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0F6E66" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.formContainer}>
         <Text style={styles.label}>Name</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            color: colors.text,
+          }]}
           value={name}
           onChangeText={setName}
           placeholder="Enter category name"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.text}
         />
 
         <Text style={styles.label}>Description (Optional)</Text>
         <TextInput
-          style={[styles.input, styles.textArea]}
+          style={[styles.input, styles.textArea, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            color: colors.text,
+          }]}
           value={description}
           onChangeText={setDescription}
           placeholder="Enter category description"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.text}
           multiline
           numberOfLines={4}
           textAlignVertical="top"
@@ -116,7 +126,6 @@ export default function EditCategoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
   },
   loadingContainer: {
     flex: 1,
@@ -130,16 +139,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
-    color: '#212121',
   },
   input: {
-    backgroundColor: 'white',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   textArea: {
     height: 100,

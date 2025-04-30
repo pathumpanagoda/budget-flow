@@ -2,6 +2,7 @@ import { StyleSheet, TouchableOpacity, View as RNView } from 'react-native';
 import { Text, View } from './Themed';
 import { StatusBadge } from './Card';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from '../context/theme';
 
 export default function ExpenseItem({ 
   title, 
@@ -11,9 +12,19 @@ export default function ExpenseItem({
   onPress,
   style 
 }) {
+  const { colors, isDarkMode } = useTheme();
+  
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <View style={[styles.container, style]}>
+      <View style={[
+        styles.container, 
+        { 
+          backgroundColor: colors.card,
+          shadowColor: isDarkMode ? '#000' : '#000',
+          borderColor: colors.border,
+        },
+        style
+      ]}>
         <RNView style={styles.contentRow}>
           <RNView style={styles.textContent}>
             <Text style={styles.title}>{title}</Text>
@@ -27,7 +38,7 @@ export default function ExpenseItem({
             <MaterialIcons 
               name="chevron-right" 
               size={24} 
-              color="#757575" 
+              color={colors.text} 
               style={styles.icon} 
             />
           </RNView>
@@ -43,8 +54,6 @@ const styles = StyleSheet.create({
     padding: 16,
     marginVertical: 8,
     marginHorizontal: 16,
-    backgroundColor: 'white',
-    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 1,
@@ -52,6 +61,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 1.0,
     elevation: 1,
+    borderWidth: 1,
   },
   contentRow: {
     flexDirection: 'row',
@@ -68,12 +78,10 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#212121',
     marginBottom: 6,
   },
   assignedTo: {
     fontSize: 14,
-    color: '#757575',
   },
   statusContainer: {
     alignItems: 'flex-end',

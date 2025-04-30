@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState } from 'react';
 import { Modal, View as RNView, StyleSheet } from 'react-native';
 import { Text, View } from './Themed';
 import Button from './Button';
+import { useTheme } from '../context/theme';
 
 const ConfirmDialogContext = createContext();
 
@@ -10,6 +11,7 @@ export function useConfirmDialog() {
 }
 
 export function ConfirmDialogProvider({ children }) {
+  const { colors, isDarkMode } = useTheme();
   const [visible, setVisible] = useState(false);
   const [dialogProps, setDialogProps] = useState({});
 
@@ -44,8 +46,8 @@ export function ConfirmDialogProvider({ children }) {
         animationType="fade"
         onRequestClose={handleCancel}
       >
-        <RNView style={styles.overlay}>
-          <View style={styles.dialog}>
+        <RNView style={[styles.overlay, { backgroundColor: isDarkMode ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.4)' }]}>
+          <View style={[styles.dialog, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={styles.title}>{dialogProps.title}</Text>
             <Text style={styles.message}>{dialogProps.message}</Text>
             <RNView style={styles.buttonRow}>
@@ -62,17 +64,16 @@ export function ConfirmDialogProvider({ children }) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   dialog: {
     width: 300,
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
     elevation: 5,
+    borderWidth: 1,
   },
   title: {
     fontSize: 18,

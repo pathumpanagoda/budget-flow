@@ -6,8 +6,10 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import { getFunders, addFunder, updateFunder, deleteFunder } from '../../services/firebaseService';
+import { useTheme } from '../../context/theme';
 
 export default function FundersScreen() {
+  const { colors, isDarkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [funders, setFunders] = useState([]);
@@ -91,14 +93,14 @@ export default function FundersScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0F6E66" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
     <ScrollView 
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
@@ -117,30 +119,42 @@ export default function FundersScreen() {
         <Card style={styles.formCard}>
           <Text style={styles.label}>Name</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.text,
+            }]}
             value={newFunderName}
             onChangeText={setNewFunderName}
             placeholder="Enter funder name"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.text}
           />
 
           <Text style={styles.label}>Phone (Optional)</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.text,
+            }]}
             value={newFunderPhone}
             onChangeText={setNewFunderPhone}
             placeholder="Enter phone number"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.text}
             keyboardType="phone-pad"
           />
 
           <Text style={styles.label}>Email (Optional)</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.text,
+            }]}
             value={newFunderEmail}
             onChangeText={setNewFunderEmail}
             placeholder="Enter email address"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.text}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -156,7 +170,7 @@ export default function FundersScreen() {
       {funders.length === 0 ? (
         <Card style={styles.emptyCard}>
           <RNView style={styles.emptyState}>
-            <FontAwesome5 name="users" size={36} color="#757575" />
+            <FontAwesome5 name="users" size={36} color={colors.text} />
             <Text style={styles.emptyText}>No funders yet</Text>
             <Text style={styles.emptySubtext}>
               Add funders to assign them to expenses
@@ -172,17 +186,17 @@ export default function FundersScreen() {
                 onPress={() => handleDeleteFunder(funder.id)}
                 style={styles.deleteButton}
               >
-                <FontAwesome5 name="trash" size={16} color="#E53935" />
+                <FontAwesome5 name="trash" size={16} color={colors.error} />
               </TouchableOpacity>
             </RNView>
             {funder.phone && (
               <Text style={styles.funderDetail}>
-                <FontAwesome5 name="phone" size={14} color="#757575" /> {funder.phone}
+                <FontAwesome5 name="phone" size={14} color={colors.text} /> {funder.phone}
               </Text>
             )}
             {funder.email && (
               <Text style={styles.funderDetail}>
-                <FontAwesome5 name="envelope" size={14} color="#757575" /> {funder.email}
+                <FontAwesome5 name="envelope" size={14} color={colors.text} /> {funder.email}
               </Text>
             )}
           </Card>
@@ -195,7 +209,6 @@ export default function FundersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
   },
   loadingContainer: {
     flex: 1,
@@ -223,16 +236,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
-    color: '#212121',
   },
   input: {
-    backgroundColor: 'white',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   submitButton: {
     marginTop: 8,
@@ -253,7 +263,6 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     fontSize: 16,
-    color: '#757575',
     textAlign: 'center',
   },
   funderCard: {
@@ -275,7 +284,6 @@ const styles = StyleSheet.create({
   },
   funderDetail: {
     fontSize: 14,
-    color: '#757575',
     marginTop: 4,
   },
 }); 

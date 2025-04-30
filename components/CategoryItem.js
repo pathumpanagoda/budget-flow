@@ -1,6 +1,7 @@
 import { StyleSheet, TouchableOpacity, View as RNView } from 'react-native';
 import { Text, View } from './Themed';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from '../context/theme';
 
 export default function CategoryItem({ 
   name, 
@@ -9,12 +10,22 @@ export default function CategoryItem({
   onPress, 
   style 
 }) {
+  const { colors, isDarkMode } = useTheme();
+  
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <View style={[styles.container, style]}>
+      <View style={[
+        styles.container, 
+        { 
+          backgroundColor: colors.card,
+          shadowColor: isDarkMode ? '#000' : '#000',
+          borderColor: colors.border,
+        },
+        style
+      ]}>
         <RNView style={styles.contentRow}>
-          <RNView style={styles.iconContainer}>
-            <MaterialIcons name="category" size={24} color="#0F6E66" />
+          <RNView style={[styles.iconContainer, { backgroundColor: isDarkMode ? 'rgba(15, 110, 102, 0.2)' : 'rgba(15, 110, 102, 0.1)' }]}>
+            <MaterialIcons name="category" size={24} color={colors.primary} />
           </RNView>
           <RNView style={styles.textContent}>
             <Text style={styles.name}>{name}</Text>
@@ -24,7 +35,7 @@ export default function CategoryItem({
           </RNView>
           <RNView style={styles.amountContainer}>
             <Text style={styles.amount}>Rs. {totalAmount.toLocaleString()}</Text>
-            <MaterialIcons name="chevron-right" size={24} color="#757575" />
+            <MaterialIcons name="chevron-right" size={24} color={colors.text} />
           </RNView>
         </RNView>
       </View>
@@ -38,8 +49,6 @@ const styles = StyleSheet.create({
     padding: 16,
     marginVertical: 8,
     marginHorizontal: 16,
-    backgroundColor: 'white',
-    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 1,
@@ -47,6 +56,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 1.0,
     elevation: 1,
+    borderWidth: 1,
   },
   contentRow: {
     flexDirection: 'row',
@@ -56,7 +66,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(15, 110, 102, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -71,7 +80,6 @@ const styles = StyleSheet.create({
   },
   expensesCount: {
     fontSize: 14,
-    color: '#757575',
   },
   amountContainer: {
     alignItems: 'flex-end',
@@ -79,7 +87,6 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#212121',
     marginBottom: 4,
   },
 }); 

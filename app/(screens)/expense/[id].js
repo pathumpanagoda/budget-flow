@@ -6,8 +6,10 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import Card from '../../../components/Card';
 import Button from '../../../components/Button';
 import { getExpense, deleteExpense } from '../../../services/firebaseService';
+import { useTheme } from '../../../context/theme';
 
 export default function ExpenseDetailScreen() {
+  const { colors, isDarkMode } = useTheme();
   const { id } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -68,29 +70,36 @@ export default function ExpenseDetailScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0F6E66" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Done':
+        return colors.success;
+      case 'Took Over':
+        return colors.warning;
+      default:
+        return colors.text;
+    }
+  };
+
   return (
     <ScrollView 
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
       <Card style={styles.expenseCard}>
         <Text style={styles.expenseTitle}>{expense?.title}</Text>
-        <Text style={styles.expenseAmount}>Rs. {expense?.amount?.toLocaleString()}</Text>
+        <Text style={[styles.expenseAmount, { color: colors.primary }]}>Rs. {expense?.amount?.toLocaleString()}</Text>
         
         <RNView style={styles.detailRow}>
           <Text style={styles.detailLabel}>Status:</Text>
-          <Text style={[
-            styles.detailValue,
-            { color: expense?.status === 'Done' ? '#4CAF50' : 
-                     expense?.status === 'Took Over' ? '#FF9800' : '#757575' }
-          ]}>
+          <Text style={[styles.detailValue, { color: getStatusColor(expense?.status) }]}>
             {expense?.status}
           </Text>
         </RNView>
@@ -134,7 +143,6 @@ export default function ExpenseDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
   },
   loadingContainer: {
     flex: 1,
@@ -152,7 +160,6 @@ const styles = StyleSheet.create({
   expenseAmount: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#0F6E66',
     marginBottom: 24,
   },
   detailRow: {
@@ -176,7 +183,6 @@ const styles = StyleSheet.create({
   },
   notes: {
     fontSize: 16,
-    color: '#757575',
     marginTop: 8,
   },
   buttonRow: {

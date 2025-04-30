@@ -7,8 +7,10 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import CategoryItem from '../../components/CategoryItem';
 import { getCategories, getExpenses } from '../../services/firebaseService';
+import { useTheme } from '../../context/theme';
 
 export default function CategoryScreen() {
+  const { colors, isDarkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -58,14 +60,14 @@ export default function CategoryScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0F6E66" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
     <ScrollView 
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
@@ -82,7 +84,7 @@ export default function CategoryScreen() {
       {categories.length === 0 ? (
         <Card style={styles.emptyCard}>
           <RNView style={styles.emptyState}>
-            <FontAwesome5 name="list" size={36} color="#757575" />
+            <FontAwesome5 name="list" size={36} color={colors.text} />
             <Text style={styles.emptyText}>No categories yet</Text>
             <Text style={styles.emptySubtext}>
               Add categories to organize your expenses
@@ -112,7 +114,6 @@ export default function CategoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
   },
   loadingContainer: {
     flex: 1,
@@ -150,7 +151,6 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#757575',
     textAlign: 'center',
     marginBottom: 24,
   },

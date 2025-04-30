@@ -7,8 +7,10 @@ import Card from '../../../components/Card';
 import Button from '../../../components/Button';
 import ExpenseItem from '../../../components/ExpenseItem';
 import { getExpenses, getCategories, deleteCategory } from '../../../services/firebaseService';
+import { useTheme } from '../../../context/theme';
 
 export default function CategoryDetailScreen() {
+  const { colors, isDarkMode } = useTheme();
   const { id } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -84,14 +86,14 @@ export default function CategoryDetailScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0F6E66" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
     <ScrollView 
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
@@ -103,11 +105,11 @@ export default function CategoryDetailScreen() {
         )}
         <RNView style={styles.statsRow}>
           <RNView style={styles.statItem}>
-            <Text style={styles.statNumber}>{expenses.length}</Text>
+            <Text style={[styles.statNumber, { color: colors.primary }]}>{expenses.length}</Text>
             <Text style={styles.statLabel}>Expenses</Text>
           </RNView>
           <RNView style={styles.statItem}>
-            <Text style={styles.statNumber}>Rs. {(category?.totalAmount || 0).toLocaleString()}</Text>
+            <Text style={[styles.statNumber, { color: colors.primary }]}>Rs. {(category?.totalAmount || 0).toLocaleString()}</Text>
             <Text style={styles.statLabel}>Total</Text>
           </RNView>
         </RNView>
@@ -140,7 +142,7 @@ export default function CategoryDetailScreen() {
       {expenses.length === 0 ? (
         <Card style={styles.emptyCard}>
           <RNView style={styles.emptyState}>
-            <FontAwesome5 name="receipt" size={36} color="#757575" />
+            <FontAwesome5 name="receipt" size={36} color={colors.text} />
             <Text style={styles.emptyText}>No expenses yet</Text>
             <Text style={styles.emptySubtext}>
               Add expenses to this category to track your spending
@@ -174,7 +176,6 @@ export default function CategoryDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
   },
   loadingContainer: {
     flex: 1,
@@ -191,7 +192,6 @@ const styles = StyleSheet.create({
   },
   categoryDescription: {
     fontSize: 16,
-    color: '#757575',
     marginBottom: 16,
   },
   statsRow: {
@@ -204,12 +204,10 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0F6E66',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
-    color: '#757575',
   },
   buttonRow: {
     flexDirection: 'row',
@@ -246,7 +244,6 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#757575',
     textAlign: 'center',
     marginBottom: 24,
   },

@@ -8,8 +8,10 @@ import Button from '../../components/Button';
 import { getBudgetSummary, getExpenses, getCategories, getFunders } from '../../services/firebaseService';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { useTheme } from '../../context/theme';
 
 export default function DashboardScreen() {
+  const { colors, isDarkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [budgetSummary, setBudgetSummary] = useState({
@@ -434,14 +436,14 @@ export default function DashboardScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0F6E66" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
     <ScrollView 
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
@@ -460,7 +462,7 @@ export default function DashboardScreen() {
             onPress={handleDownloadReport}
             variant="outline"
             style={styles.reportButton}
-            icon={<FontAwesome5 name="download" size={16} color="#0F6E66" style={styles.reportButtonIcon} />}
+            icon={<FontAwesome5 name="download" size={16} color={colors.primary} style={styles.reportButtonIcon} />}
           />
         </RNView>
       </Card>
@@ -468,22 +470,22 @@ export default function DashboardScreen() {
       <Card style={styles.card}>
         <Text style={styles.sectionTitle}>Expense Status</Text>
         <RNView style={styles.statusCardsContainer}>
-          <RNView style={[styles.statusCard, { backgroundColor: '#E0E0E0' }]}>
+          <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
             <Text style={styles.statusNumber}>{statusCounts.pending}</Text>
             <Text style={styles.statusLabel}>Pending</Text>
             <Text style={styles.statusAmount}>Rs. {statusAmounts.pending.toLocaleString()}</Text>
           </RNView>
-          <RNView style={[styles.statusCard, { backgroundColor: '#FFE0B2' }]}>
+          <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
             <Text style={styles.statusNumber}>{statusCounts.tookOver}</Text>
             <Text style={styles.statusLabel}>Took Over</Text>
             <Text style={styles.statusAmount}>Rs. {statusAmounts.tookOver.toLocaleString()}</Text>
           </RNView>
-          <RNView style={[styles.statusCard, { backgroundColor: '#C8E6C9' }]}>
+          <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
             <Text style={styles.statusNumber}>{statusCounts.done}</Text>
             <Text style={styles.statusLabel}>Done</Text>
             <Text style={styles.statusAmount}>Rs. {statusAmounts.done.toLocaleString()}</Text>
           </RNView>
-          <RNView style={[styles.statusCard, { backgroundColor: '#E3F2FD' }]}>
+          <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
             <Text style={styles.statusNumber}>{statusCounts.utilized}</Text>
             <Text style={styles.statusLabel}>Utilized</Text>
             <Text style={styles.statusAmount}>Rs. {statusAmounts.utilized.toLocaleString()}</Text>
@@ -495,18 +497,18 @@ export default function DashboardScreen() {
         <Text style={styles.sectionTitle}>Expenses by Category</Text>
         {categoryBreakdown.length === 0 ? (
           <RNView style={styles.emptyState}>
-            <FontAwesome5 name="chart-pie" size={24} color="#757575" />
+            <FontAwesome5 name="chart-pie" size={24} color={colors.text} />
             <Text style={styles.emptyText}>No expense data</Text>
           </RNView>
         ) : (
           categoryBreakdown.map((category) => (
             <RNView key={category.id} style={styles.breakdownItem}>
               <RNView style={styles.breakdownHeader}>
-                <RNView style={styles.categoryDot} />
+                <RNView style={[styles.categoryDot, { backgroundColor: colors.primary }]} />
                 <Text style={styles.breakdownName}>{category.name}</Text>
               </RNView>
               <RNView style={styles.breakdownDetails}>
-                <Text style={styles.breakdownAmount}>Rs. {category.totalAmount.toLocaleString()}</Text>
+                <Text style={[styles.breakdownAmount, { color: colors.primary }]}>Rs. {category.totalAmount.toLocaleString()}</Text>
                 <Text style={styles.breakdownCount}>({category.count} expenses)</Text>
               </RNView>
             </RNView>
@@ -518,18 +520,18 @@ export default function DashboardScreen() {
         <Text style={styles.sectionTitle}>Expenses by Funder</Text>
         {funderBreakdown.length === 0 ? (
           <RNView style={styles.emptyState}>
-            <FontAwesome5 name="users" size={24} color="#757575" />
+            <FontAwesome5 name="users" size={24} color={colors.text} />
             <Text style={styles.emptyText}>No funder data</Text>
           </RNView>
         ) : (
           funderBreakdown.map((funder) => (
             <RNView key={funder.id} style={styles.breakdownItem}>
               <RNView style={styles.breakdownHeader}>
-                <FontAwesome5 name="user" size={14} color="#0F6E66" style={styles.funderIcon} />
+                <FontAwesome5 name="user" size={14} color={colors.primary} style={styles.funderIcon} />
                 <Text style={styles.breakdownName}>{funder.name}</Text>
               </RNView>
               <RNView style={styles.breakdownDetails}>
-                <Text style={styles.breakdownAmount}>Rs. {funder.totalAmount.toLocaleString()}</Text>
+                <Text style={[styles.breakdownAmount, { color: colors.primary }]}>Rs. {funder.totalAmount.toLocaleString()}</Text>
                 <Text style={styles.breakdownCount}>({funder.count} expenses)</Text>
               </RNView>
             </RNView>
@@ -541,15 +543,15 @@ export default function DashboardScreen() {
         <Text style={styles.sectionTitle}>Recent Expenses</Text>
         {recentExpenses.length === 0 ? (
           <RNView style={styles.emptyState}>
-            <FontAwesome5 name="receipt" size={24} color="#757575" />
+            <FontAwesome5 name="receipt" size={24} color={colors.text} />
             <Text style={styles.emptyText}>No recent expenses</Text>
           </RNView>
         ) : (
           recentExpenses.map((expense) => (
-            <RNView key={expense.id} style={styles.recentExpenseItem}>
+            <RNView key={expense.id} style={[styles.recentExpenseItem, { borderBottomColor: colors.border }]}>
               <RNView style={styles.recentExpenseHeader}>
                 <Text style={styles.recentExpenseTitle}>{expense.title}</Text>
-                <Text style={styles.recentExpenseAmount}>Rs. {expense.amount.toLocaleString()}</Text>
+                <Text style={[styles.recentExpenseAmount, { color: colors.primary }]}>Rs. {expense.amount.toLocaleString()}</Text>
               </RNView>
               <RNView style={styles.recentExpenseDetails}>
                 <Text style={styles.recentExpenseStatus}>{expense.status}</Text>
@@ -568,7 +570,6 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
   },
   loadingContainer: {
     flex: 1,
@@ -608,7 +609,6 @@ const styles = StyleSheet.create({
   },
   statusAmount: {
     fontSize: 12,
-    color: '#757575',
   },
   emptyState: {
     alignItems: 'center',
@@ -617,7 +617,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#757575',
     marginTop: 8,
   },
   breakdownItem: {
@@ -632,7 +631,6 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#0F6E66',
     marginRight: 8,
   },
   funderIcon: {
@@ -650,17 +648,14 @@ const styles = StyleSheet.create({
   breakdownAmount: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#0F6E66',
   },
   breakdownCount: {
     fontSize: 14,
-    color: '#757575',
   },
   recentExpenseItem: {
     marginBottom: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
   },
   recentExpenseHeader: {
     flexDirection: 'row',
@@ -675,7 +670,6 @@ const styles = StyleSheet.create({
   recentExpenseAmount: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#0F6E66',
   },
   recentExpenseDetails: {
     flexDirection: 'row',
@@ -684,11 +678,9 @@ const styles = StyleSheet.create({
   },
   recentExpenseStatus: {
     fontSize: 14,
-    color: '#757575',
   },
   recentExpenseDate: {
     fontSize: 14,
-    color: '#757575',
   },
   reportButtonContainer: {
     flexDirection: 'row',

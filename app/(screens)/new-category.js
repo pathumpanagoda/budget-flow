@@ -5,8 +5,10 @@ import { router } from 'expo-router';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import { addCategory } from '../../services/firebaseService';
+import { useTheme } from '../../context/theme';
 
 export default function NewCategoryScreen() {
+  const { colors, isDarkMode } = useTheme();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
@@ -41,29 +43,37 @@ export default function NewCategoryScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <Card style={styles.formCard}>
         <Text style={styles.title}>Add New Category</Text>
         
         <RNView style={styles.inputContainer}>
           <Text style={styles.label}>Category Name</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.text,
+            }]}
             value={name}
             onChangeText={setName}
             placeholder="Enter category name"
-            placeholderTextColor="#9E9E9E"
+            placeholderTextColor={colors.text}
           />
         </RNView>
         
         <RNView style={styles.inputContainer}>
           <Text style={styles.label}>Description (Optional)</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, { 
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.text,
+            }]}
             value={description}
             onChangeText={setDescription}
             placeholder="Enter category description"
-            placeholderTextColor="#9E9E9E"
+            placeholderTextColor={colors.text}
             multiline
             numberOfLines={4}
             textAlignVertical="top"
@@ -92,7 +102,6 @@ export default function NewCategoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
   },
   formCard: {
     margin: 16,
@@ -111,11 +120,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   input: {
-    backgroundColor: '#f9f9f9',
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
     fontSize: 16,
   },
   textArea: {

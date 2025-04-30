@@ -7,8 +7,10 @@ import Button from '../../../components/Button';
 import { Picker } from '@react-native-picker/picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { getExpense, updateExpense, getCategories, getFunders } from '../../../services/firebaseService';
+import { useTheme } from '../../../context/theme';
 
 export default function EditExpenseScreen() {
+  const { colors, isDarkMode } = useTheme();
   const { id } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,6 +23,7 @@ export default function EditExpenseScreen() {
   const [categories, setCategories] = useState([]);
   const [funders, setFunders] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [initialData, setInitialData] = useState(null);
 
   useEffect(() => {
     if (!id) {
@@ -55,6 +58,7 @@ export default function EditExpenseScreen() {
         setNotes(expenseData.notes || '');
         setCategories(categoriesData);
         setFunders(fundersData);
+        setInitialData(expenseData);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Could not load expense data');
@@ -68,14 +72,20 @@ export default function EditExpenseScreen() {
   }, [id]);
 
   const handleCancel = () => {
-    if (
-      title !== expense?.title ||
-      amount !== expense?.amount.toString() ||
-      categoryId !== expense?.categoryId ||
-      funderId !== (expense?.funderId || '') ||
-      status !== expense?.status ||
-      notes !== (expense?.notes || '')
-    ) {
+    if (!initialData) {
+      router.back();
+      return;
+    }
+
+    const hasChanges = 
+      title !== initialData.title ||
+      amount !== initialData.amount.toString() ||
+      categoryId !== initialData.categoryId ||
+      funderId !== (initialData.funderId || '') ||
+      status !== initialData.status ||
+      notes !== (initialData.notes || '');
+
+    if (hasChanges) {
       Alert.alert(
         'Discard Changes',
         'Are you sure you want to discard your changes?',
@@ -149,7 +159,7 @@ export default function EditExpenseScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0F6E66" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -157,36 +167,44 @@ export default function EditExpenseScreen() {
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
+        <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
         <Button title="Go Back" onPress={() => router.back()} style={styles.errorButton} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <Card style={styles.formCard}>
         <Text style={styles.title}>Edit Expense</Text>
 
         <RNView style={styles.inputContainer}>
           <Text style={styles.label}>Title</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.text,
+            }]}
             value={title}
             onChangeText={setTitle}
             placeholder="e.g., 2 huts for left side of the ground"
-            placeholderTextColor="#9E9E9E"
+            placeholderTextColor={colors.text}
           />
         </RNView>
 
         <RNView style={styles.inputContainer}>
           <Text style={styles.label}>Amount (Rs.)</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.text,
+            }]}
             value={amount}
             onChangeText={setAmount}
             placeholder="e.g., 25000"
-            placeholderTextColor="#9E9E9E"
+            placeholderTextColor={colors.text}
             keyboardType="numeric"
           />
         </RNView>
@@ -194,11 +212,14 @@ export default function EditExpenseScreen() {
         <RNView style={styles.inputContainer}>
           <Text style={styles.label}>Category</Text>
           {categories.length > 0 ? (
-            <RNView style={styles.pickerContainer}>
+            <RNView style={[styles.pickerContainer, { 
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+            }]}>
               <Picker
                 selectedValue={categoryId}
                 onValueChange={(itemValue) => setCategoryId(itemValue)}
-                style={styles.picker}
+                style={[styles.picker, { color: colors.text }]}
               >
                 {categories.map((category) => (
                   <Picker.Item 
@@ -211,22 +232,28 @@ export default function EditExpenseScreen() {
             </RNView>
           ) : (
             <TouchableOpacity 
-              style={styles.addButton}
+              style={[styles.addButton, { 
+                backgroundColor: colors.card,
+                borderColor: colors.primary,
+              }]}
               onPress={() => router.push('/new-category')}
             >
-              <MaterialIcons name="add" size={20} color="#0F6E66" />
-              <Text style={styles.addButtonText}>Add a category first</Text>
+              <MaterialIcons name="add" size={20} color={colors.primary} />
+              <Text style={[styles.addButtonText, { color: colors.primary }]}>Add a category first</Text>
             </TouchableOpacity>
           )}
         </RNView>
 
         <RNView style={styles.inputContainer}>
           <Text style={styles.label}>Assigned To (Funder)</Text>
-          <RNView style={styles.pickerContainer}>
+          <RNView style={[styles.pickerContainer, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+          }]}>
             <Picker
               selectedValue={funderId}
               onValueChange={(itemValue) => setFunderId(itemValue)}
-              style={styles.picker}
+              style={[styles.picker, { color: colors.text }]}
             >
               <Picker.Item label="Not assigned" value="" />
               {funders.map((funder) => (
@@ -242,11 +269,14 @@ export default function EditExpenseScreen() {
 
         <RNView style={styles.inputContainer}>
           <Text style={styles.label}>Status</Text>
-          <RNView style={styles.pickerContainer}>
+          <RNView style={[styles.pickerContainer, { 
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+          }]}>
             <Picker
               selectedValue={status}
               onValueChange={(itemValue) => setStatus(itemValue)}
-              style={styles.picker}
+              style={[styles.picker, { color: colors.text }]}
             >
               <Picker.Item label="Pending" value="Pending" />
               <Picker.Item label="Took Over" value="Took Over" />
@@ -259,11 +289,15 @@ export default function EditExpenseScreen() {
         <RNView style={styles.inputContainer}>
           <Text style={styles.label}>Notes (Optional)</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[styles.input, styles.textArea, { 
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.text,
+            }]}
             value={notes}
             onChangeText={setNotes}
             placeholder="Enter any additional notes"
-            placeholderTextColor="#9E9E9E"
+            placeholderTextColor={colors.text}
             multiline
             numberOfLines={4}
             textAlignVertical="top"
@@ -292,7 +326,6 @@ export default function EditExpenseScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
   },
   loadingContainer: {
     flex: 1,
@@ -307,7 +340,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: '#E53935',
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -331,18 +363,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   input: {
-    backgroundColor: '#f9f9f9',
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
     fontSize: 16,
   },
   pickerContainer: {
-    backgroundColor: '#f9f9f9',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
     overflow: 'hidden',
   },
   picker: {
@@ -368,15 +396,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f9f9f9',
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#0F6E66',
     borderStyle: 'dashed',
   },
   addButtonText: {
-    color: '#0F6E66',
     fontWeight: '600',
     marginLeft: 8,
   },

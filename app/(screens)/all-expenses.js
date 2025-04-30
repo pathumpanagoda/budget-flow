@@ -7,8 +7,10 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import ExpenseItem from '../../components/ExpenseItem';
 import { getExpenses } from '../../services/firebaseService';
+import { useTheme } from '../../context/theme';
 
 export default function AllExpensesScreen() {
+  const { colors, isDarkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expenses, setExpenses] = useState([]);
@@ -50,14 +52,14 @@ export default function AllExpensesScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0F6E66" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
     <ScrollView 
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
@@ -111,9 +113,9 @@ export default function AllExpensesScreen() {
         
         {filteredExpenses.length === 0 ? (
           <RNView style={styles.emptyState}>
-            <FontAwesome5 name="receipt" size={24} color="#757575" />
+            <FontAwesome5 name="receipt" size={24} color={colors.text} />
             <Text style={styles.emptyText}>No expenses found</Text>
-            <Text style={styles.emptySubtext}>
+            <Text style={[styles.emptySubtext, { color: colors.text }]}>
               {statusFilter === 'all' 
                 ? 'Add expenses to track your spending'
                 : `No expenses with status "${statusFilter}"`}
@@ -139,7 +141,6 @@ export default function AllExpensesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
   },
   loadingContainer: {
     flex: 1,
@@ -192,7 +193,6 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#757575',
     textAlign: 'center',
   },
 }); 

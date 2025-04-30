@@ -1,5 +1,6 @@
 import { TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Text } from './Themed';
+import { useTheme } from '../context/theme';
 
 export default function Button({
   title,
@@ -10,22 +11,24 @@ export default function Button({
   disabled = false,
   variant = 'primary',
 }) {
+  const { colors, isDarkMode } = useTheme();
+
   const getButtonStyles = () => {
     if (variant === 'primary') {
-      return styles.primaryButton;
+      return [styles.primaryButton, { backgroundColor: colors.primary }];
     } else if (variant === 'outline') {
-      return styles.outlineButton;
+      return [styles.outlineButton, { borderColor: colors.primary }];
     } else if (variant === 'danger') {
-      return styles.dangerButton;
+      return [styles.dangerButton, { backgroundColor: colors.error }];
     }
-    return styles.primaryButton;
+    return [styles.primaryButton, { backgroundColor: colors.primary }];
   };
 
   const getTextStyles = () => {
     if (variant === 'primary') {
       return styles.primaryText;
     } else if (variant === 'outline') {
-      return styles.outlineText;
+      return [styles.outlineText, { color: colors.primary }];
     } else if (variant === 'danger') {
       return styles.dangerText;
     }
@@ -39,7 +42,7 @@ export default function Button({
       disabled={loading || disabled}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'outline' ? '#0F6E66' : 'white'} />
+        <ActivityIndicator color={variant === 'outline' ? colors.primary : 'white'} />
       ) : (
         <Text style={[getTextStyles(), textStyle, disabled && styles.disabledText]}>{title}</Text>
       )}
@@ -49,7 +52,6 @@ export default function Button({
 
 const styles = StyleSheet.create({
   primaryButton: {
-    backgroundColor: '#0F6E66',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -62,12 +64,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#0F6E66',
     alignItems: 'center',
     justifyContent: 'center',
   },
   dangerButton: {
-    backgroundColor: '#E53935',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -80,7 +80,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   outlineText: {
-    color: '#0F6E66',
     fontWeight: '600',
     fontSize: 16,
   },
