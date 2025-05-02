@@ -22,10 +22,10 @@ export default function HomeScreen() {
     receivedFund: 0,
   });
   const [statusTotals, setStatusTotals] = useState({
+    remaining: 0,
     pending: 0,
-    tookOver: 0,
-    done: 0,
-    utilized: 0,
+    received: 0,
+    spent: 0,
   });
 
   const fetchData = async () => {
@@ -41,9 +41,9 @@ export default function HomeScreen() {
       // Calculate total budget as sum of all expenses
       const totalBudget = expensesData.reduce((sum, expense) => sum + (expense.amount || 0), 0);
       
-      // Calculate received fund as sum of expenses with status "Done"
+      // Calculate received fund as sum of expenses with status "Received"
       const receivedFund = expensesData
-        .filter(expense => expense.status === 'Done')
+        .filter(expense => expense.status === 'Received')
         .reduce((sum, expense) => sum + (expense.amount || 0), 0);
       
       setBudgetSummary({
@@ -53,21 +53,21 @@ export default function HomeScreen() {
       
       // Calculate totals for each status
       const totals = {
+        remaining: 0,
         pending: 0,
-        tookOver: 0,
-        done: 0,
-        utilized: 0,
+        received: 0,
+        spent: 0,
       };
       
       expensesData.forEach(expense => {
-        if (expense.status === 'Pending') {
+        if (expense.status === 'Remaining') {
+          totals.remaining += expense.amount;
+        } else if (expense.status === 'Pending') {
           totals.pending += expense.amount;
-        } else if (expense.status === 'Took Over') {
-          totals.tookOver += expense.amount;
-        } else if (expense.status === 'Done') {
-          totals.done += expense.amount;
-        } else if (expense.status === 'Utilized') {
-          totals.utilized += expense.amount;
+        } else if (expense.status === 'Received') {
+          totals.received += expense.amount;
+        } else if (expense.status === 'Spent') {
+          totals.spent += expense.amount;
         }
       });
       
@@ -138,20 +138,20 @@ export default function HomeScreen() {
           </RNView>
           <RNView style={styles.statusCardsContainer}>
             <RNView style={[styles.statusCard, { backgroundColor: colors.border }]}>
+              <Text style={styles.statusAmount}>Rs. {(statusTotals.remaining || 0).toLocaleString()}</Text>
+              <Text style={styles.statusLabel}>Remaining</Text>
+            </RNView>
+            <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(255, 224, 178, 0.2)' : '#FFE0B2' }]}>
               <Text style={styles.statusAmount}>Rs. {(statusTotals.pending || 0).toLocaleString()}</Text>
               <Text style={styles.statusLabel}>Pending</Text>
             </RNView>
-            <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(255, 224, 178, 0.2)' : '#FFE0B2' }]}>
-              <Text style={styles.statusAmount}>Rs. {(statusTotals.tookOver || 0).toLocaleString()}</Text>
-              <Text style={styles.statusLabel}>Took Over</Text>
-            </RNView>
             <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(200, 230, 201, 0.2)' : '#C8E6C9' }]}>
-              <Text style={styles.statusAmount}>Rs. {(statusTotals.done || 0).toLocaleString()}</Text>
-              <Text style={styles.statusLabel}>Done</Text>
+              <Text style={styles.statusAmount}>Rs. {(statusTotals.received || 0).toLocaleString()}</Text>
+              <Text style={styles.statusLabel}>Received</Text>
             </RNView>
             <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(227, 242, 253, 0.2)' : '#E3F2FD' }]}>
-              <Text style={styles.statusAmount}>Rs. {(statusTotals.utilized || 0).toLocaleString()}</Text>
-              <Text style={styles.statusLabel}>Utilized</Text>
+              <Text style={styles.statusAmount}>Rs. {(statusTotals.spent || 0).toLocaleString()}</Text>
+              <Text style={styles.statusLabel}>Spent</Text>
             </RNView>
           </RNView>
         </Card>

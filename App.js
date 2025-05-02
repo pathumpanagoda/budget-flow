@@ -10,7 +10,7 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AuthProvider>
-          <StatusBar style="auto" />
+      <StatusBar style="auto" />
           <AppLayout />
         </AuthProvider>
       </SafeAreaProvider>

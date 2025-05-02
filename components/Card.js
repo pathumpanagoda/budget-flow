@@ -22,16 +22,16 @@ export default function Card({ children, style, title }) {
 
 export function StatusBadge({ status }) {
   const { colors, isDarkMode } = useTheme();
-  let backgroundColor = colors.border; // Default gray for pending
+  let backgroundColor = colors.border; // Default gray for remaining
   let textColor = isDarkMode ? '#B0B0B0' : '#757575';
 
-  if (status === 'Took Over') {
+  if (status === 'Pending') {
     backgroundColor = isDarkMode ? '#6d4c1b' : '#FFE0B2'; // Darker orange for dark mode
     textColor = isDarkMode ? '#ffb74d' : '#F57C00';
-  } else if (status === 'Done') {
+  } else if (status === 'Received') {
     backgroundColor = isDarkMode ? '#295b2c' : '#C8E6C9'; // Darker green for dark mode
     textColor = isDarkMode ? '#81c784' : '#388E3C';
-  } else if (status === 'Utilized') {
+  } else if (status === 'Spent') {
     backgroundColor = isDarkMode ? '#1a237e' : '#E3F2FD'; // Darker blue for dark mode
     textColor = isDarkMode ? '#90caf9' : '#1976D2';
   }

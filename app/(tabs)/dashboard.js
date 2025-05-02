@@ -21,16 +21,16 @@ export default function DashboardScreen() {
     remainingFund: 0,
   });
   const [statusCounts, setStatusCounts] = useState({
+    remaining: 0,
     pending: 0,
-    tookOver: 0,
-    done: 0,
-    utilized: 0,
+    received: 0,
+    spent: 0,
   });
   const [statusAmounts, setStatusAmounts] = useState({
+    remaining: 0,
     pending: 0,
-    tookOver: 0,
-    done: 0,
-    utilized: 0,
+    received: 0,
+    spent: 0,
   });
   const [categoryBreakdown, setCategoryBreakdown] = useState([]);
   const [funderBreakdown, setFunderBreakdown] = useState([]);
@@ -50,9 +50,9 @@ export default function DashboardScreen() {
       // Calculate total budget as sum of all expenses
       const totalBudget = expensesData.reduce((sum, expense) => sum + (expense.amount || 0), 0);
       
-      // Calculate received fund as sum of expenses with status "Done"
+      // Calculate received fund as sum of expenses with status "Received"
       const receivedFund = expensesData
-        .filter(expense => expense.status === 'Done')
+        .filter(expense => expense.status === 'Received')
         .reduce((sum, expense) => sum + (expense.amount || 0), 0);
       
       setBudgetSummary({
@@ -64,32 +64,32 @@ export default function DashboardScreen() {
       
       // Calculate status counts and amounts
       const counts = {
+        remaining: 0,
         pending: 0,
-        tookOver: 0,
-        done: 0,
-        utilized: 0,
+        received: 0,
+        spent: 0,
       };
       
       const amounts = {
+        remaining: 0,
         pending: 0,
-        tookOver: 0,
-        done: 0,
-        utilized: 0,
+        received: 0,
+        spent: 0,
       };
       
       expensesData.forEach(expense => {
-        if (expense.status === 'Pending') {
+        if (expense.status === 'Remaining') {
+          counts.remaining += 1;
+          amounts.remaining += expense.amount;
+        } else if (expense.status === 'Pending') {
           counts.pending += 1;
           amounts.pending += expense.amount;
-        } else if (expense.status === 'Took Over') {
-          counts.tookOver += 1;
-          amounts.tookOver += expense.amount;
-        } else if (expense.status === 'Done') {
-          counts.done += 1;
-          amounts.done += expense.amount;
-        } else if (expense.status === 'Utilized') {
-          counts.utilized += 1;
-          amounts.utilized += expense.amount;
+        } else if (expense.status === 'Received') {
+          counts.received += 1;
+          amounts.received += expense.amount;
+        } else if (expense.status === 'Spent') {
+          counts.spent += 1;
+          amounts.spent += expense.amount;
         }
       });
       
@@ -306,24 +306,24 @@ export default function DashboardScreen() {
                 <th>Amount</th>
             </tr>
             <tr>
+                <td>Remaining</td>
+                <td>${statusCounts.remaining}</td>
+                <td class="amount">Rs. ${statusAmounts.remaining.toLocaleString()}</td>
+            </tr>
+            <tr>
                 <td>Pending</td>
                 <td>${statusCounts.pending}</td>
                 <td class="amount">Rs. ${statusAmounts.pending.toLocaleString()}</td>
             </tr>
             <tr>
-                <td>Took Over</td>
-                <td>${statusCounts.tookOver}</td>
-                <td class="amount">Rs. ${statusAmounts.tookOver.toLocaleString()}</td>
+                <td>Received</td>
+                <td>${statusCounts.received}</td>
+                <td class="amount">Rs. ${statusAmounts.received.toLocaleString()}</td>
             </tr>
             <tr>
-                <td>Done</td>
-                <td>${statusCounts.done}</td>
-                <td class="amount">Rs. ${statusAmounts.done.toLocaleString()}</td>
-            </tr>
-            <tr>
-                <td>Utilized</td>
-                <td>${statusCounts.utilized}</td>
-                <td class="amount">Rs. ${statusAmounts.utilized.toLocaleString()}</td>
+                <td>Spent</td>
+                <td>${statusCounts.spent}</td>
+                <td class="amount">Rs. ${statusAmounts.spent.toLocaleString()}</td>
             </tr>
         </table>
     </div>
@@ -347,8 +347,8 @@ export default function DashboardScreen() {
                             <tr>
                                 <td>${expense.title}</td>
                                 <td class="amount">Rs. ${expense.amount.toLocaleString()}</td>
-                                <td class="${expense.status === 'Took Over' ? 'status-took-over' : ''}">${expense.status}</td>
-                                <td>${expense.status === 'Took Over' ? expense.takenOverBy : (expense.assignedTo || 'Not Assigned')}</td>
+                                <td class="${expense.status === 'Pending' ? 'status-took-over' : ''}">${expense.status}</td>
+                                <td>${expense.status === 'Pending' ? expense.takenOverBy : (expense.assignedTo || 'Not Assigned')}</td>
                                 <td>${new Date(expense.createdAt).toLocaleDateString()}</td>
                             </tr>
                         `).join('')}
@@ -389,8 +389,8 @@ export default function DashboardScreen() {
                 <tr>
                     <td>${expense.title}</td>
                     <td class="amount">Rs. ${expense.amount.toLocaleString()}</td>
-                    <td class="${expense.status === 'Took Over' ? 'status-took-over' : ''}">${expense.status}</td>
-                    <td>${expense.status === 'Took Over' ? expense.takenOverBy : (expense.assignedTo || 'Not Assigned')}</td>
+                    <td class="${expense.status === 'Pending' ? 'status-took-over' : ''}">${expense.status}</td>
+                    <td>${expense.status === 'Pending' ? expense.takenOverBy : (expense.assignedTo || 'Not Assigned')}</td>
                     <td>${new Date(expense.createdAt).toLocaleDateString()}</td>
                 </tr>
             `).join('')}
@@ -471,24 +471,24 @@ export default function DashboardScreen() {
         <Text style={styles.sectionTitle}>Expense Status</Text>
         <RNView style={styles.statusCardsContainer}>
           <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
+            <Text style={styles.statusNumber}>{statusCounts.remaining}</Text>
+            <Text style={styles.statusLabel}>Remaining</Text>
+            <Text style={styles.statusAmount}>Rs. {statusAmounts.remaining.toLocaleString()}</Text>
+          </RNView>
+          <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
             <Text style={styles.statusNumber}>{statusCounts.pending}</Text>
             <Text style={styles.statusLabel}>Pending</Text>
             <Text style={styles.statusAmount}>Rs. {statusAmounts.pending.toLocaleString()}</Text>
           </RNView>
           <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
-            <Text style={styles.statusNumber}>{statusCounts.tookOver}</Text>
-            <Text style={styles.statusLabel}>Took Over</Text>
-            <Text style={styles.statusAmount}>Rs. {statusAmounts.tookOver.toLocaleString()}</Text>
+            <Text style={styles.statusNumber}>{statusCounts.received}</Text>
+            <Text style={styles.statusLabel}>Received</Text>
+            <Text style={styles.statusAmount}>Rs. {statusAmounts.received.toLocaleString()}</Text>
           </RNView>
           <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
-            <Text style={styles.statusNumber}>{statusCounts.done}</Text>
-            <Text style={styles.statusLabel}>Done</Text>
-            <Text style={styles.statusAmount}>Rs. {statusAmounts.done.toLocaleString()}</Text>
-          </RNView>
-          <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
-            <Text style={styles.statusNumber}>{statusCounts.utilized}</Text>
-            <Text style={styles.statusLabel}>Utilized</Text>
-            <Text style={styles.statusAmount}>Rs. {statusAmounts.utilized.toLocaleString()}</Text>
+            <Text style={styles.statusNumber}>{statusCounts.spent}</Text>
+            <Text style={styles.statusLabel}>Spent</Text>
+            <Text style={styles.statusAmount}>Rs. {statusAmounts.spent.toLocaleString()}</Text>
           </RNView>
         </RNView>
       </Card>

@@ -74,27 +74,27 @@ export default function AllExpensesScreen() {
             style={styles.filterButton}
           />
           <Button
+            title="Remaining"
+            onPress={() => setStatusFilter('Remaining')}
+            variant={statusFilter === 'Remaining' ? 'primary' : 'outline'}
+            style={styles.filterButton}
+          />
+          <Button
             title="Pending"
             onPress={() => setStatusFilter('Pending')}
             variant={statusFilter === 'Pending' ? 'primary' : 'outline'}
             style={styles.filterButton}
           />
           <Button
-            title="Took Over"
-            onPress={() => setStatusFilter('Took Over')}
-            variant={statusFilter === 'Took Over' ? 'primary' : 'outline'}
+            title="Received"
+            onPress={() => setStatusFilter('Received')}
+            variant={statusFilter === 'Received' ? 'primary' : 'outline'}
             style={styles.filterButton}
           />
           <Button
-            title="Done"
-            onPress={() => setStatusFilter('Done')}
-            variant={statusFilter === 'Done' ? 'primary' : 'outline'}
-            style={styles.filterButton}
-          />
-          <Button
-            title="Utilized"
-            onPress={() => setStatusFilter('Utilized')}
-            variant={statusFilter === 'Utilized' ? 'primary' : 'outline'}
+            title="Spent"
+            onPress={() => setStatusFilter('Spent')}
+            variant={statusFilter === 'Spent' ? 'primary' : 'outline'}
             style={styles.filterButton}
           />
         </RNView>
@@ -117,7 +117,7 @@ export default function AllExpensesScreen() {
             <Text style={styles.emptyText}>No expenses found</Text>
             <Text style={[styles.emptySubtext, { color: colors.text }]}>
               {statusFilter === 'all' 
-                ? 'Add expenses to track your spending'
+                ? 'Add expenses to track your sremaining'
                 : `No expenses with status "${statusFilter}"`}
             </Text>
           </RNView>

@@ -68,7 +68,7 @@ export default function NewExpenseScreen() {
         description: description.trim(),
         categoryId: selectedCategory,
         funderId: selectedFunder || null,
-        status: 'Pending',
+        status: 'Remaining',
         createdAt: new Date(),
       });
       

@@ -145,7 +145,7 @@ export default function CategoryDetailScreen() {
             <FontAwesome5 name="receipt" size={36} color={colors.text} />
             <Text style={styles.emptyText}>No expenses yet</Text>
             <Text style={styles.emptySubtext}>
-              Add expenses to this category to track your spending
+              Add expenses to this category to track your sremaining
             </Text>
             <Button 
               title="Add Your First Expense" 

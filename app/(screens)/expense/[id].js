@@ -77,9 +77,9 @@ export default function ExpenseDetailScreen() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Done':
+      case 'Received':
         return colors.success;
-      case 'Took Over':
+      case 'Pending':
         return colors.warning;
       default:
         return colors.text;
