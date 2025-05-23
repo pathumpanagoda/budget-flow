@@ -3,7 +3,7 @@ import { StyleSheet, ScrollView, View as RNView, ActivityIndicator, Alert, TextI
 import { Text, View } from '../../../components/Themed';
 import { router, useLocalSearchParams } from 'expo-router';
 import Button from '../../../components/Button';
-import { getCategories, updateCategory } from '../../../services/firebaseService';
+import { getCategories, updateCategory } from '../../../services/sqliteService';
 import { useTheme } from '../../../context/theme';
 
 export default function EditCategoryScreen() {
@@ -22,18 +22,21 @@ export default function EditCategoryScreen() {
   const fetchCategory = async () => {
     try {
       setLoading(true);
-      const categories = await getCategories();
-      const foundCategory = categories.find(cat => cat.id === id);
+      const categoriesData = await getCategories(); // sqliteService returns array directly
+      const foundCategory = categoriesData.find(cat => cat.id === id);
       
       if (!foundCategory) {
-        Alert.alert('Error', 'Category not found');
+        Alert.alert('Error', `Category with ID ${id} not found.`);
         router.back();
         return;
       }
 
       setCategory(foundCategory);
       setName(foundCategory.name);
-      setDescription(foundCategory.description || '');
+      // Description is not in the categories table in SQLite
+      // If description is a desired feature, the table and service need an update.
+      // For now, keeping it as it was, but it will always be '' or the value from a potentially non-existent field.
+      setDescription(foundCategory.description || ''); 
     } catch (error) {
       console.error('Error fetching category:', error);
       Alert.alert('Error', 'Could not load category. Please try again.');
@@ -50,11 +53,16 @@ export default function EditCategoryScreen() {
 
     try {
       setSaving(true);
+      // updateCategory in sqliteService expects (id, { name })
+      // The description field doesn't exist in the SQLite 'categories' table.
+      // If it's needed, the table schema and sqliteService.updateCategory must be changed.
       await updateCategory(id, {
         name: name.trim(),
-        description: description.trim(),
+        // description: description.trim(), // Not sending description
       });
       Alert.alert('Success', 'Category updated successfully');
+      // It's good practice to re-fetch or pass updated data if the previous screen relies on it.
+      // For now, just going back.
       router.back();
     } catch (error) {
       console.error('Error updating category:', error);

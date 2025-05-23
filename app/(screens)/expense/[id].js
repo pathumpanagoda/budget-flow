@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
 import Card from '../../../components/Card';
 import Button from '../../../components/Button';
-import { getExpense, deleteExpense } from '../../../services/firebaseService';
+import { getExpense, deleteExpense } from '../../../services/sqliteService';
 import { useTheme } from '../../../context/theme';
 
 export default function ExpenseDetailScreen() {
@@ -18,13 +18,13 @@ export default function ExpenseDetailScreen() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const expenseData = await getExpense(id);
-      if (!expenseData) {
+      const expenseItem = await getExpense(id); // sqliteService returns item directly
+      if (!expenseItem) {
         Alert.alert('Error', 'Expense not found');
         router.back();
         return;
       }
-      setExpense(expenseData);
+      setExpense(expenseItem);
     } catch (error) {
       console.error('Error fetching expense data:', error);
       Alert.alert('Error', 'Could not load expense data. Please try again.');
@@ -104,17 +104,19 @@ export default function ExpenseDetailScreen() {
           </Text>
         </RNView>
 
-        {expense?.assignedTo && (
+        {/* expense.funderId will contain the ID. Displaying the name would require fetching funders and finding by ID */}
+        {expense?.funderId && (
           <RNView style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Assigned To:</Text>
-            <Text style={styles.detailValue}>{expense.assignedTo}</Text>
+            <Text style={styles.detailLabel}>Funder ID:</Text> 
+            <Text style={styles.detailValue}>{expense.funderId}</Text>
           </RNView>
         )}
 
-        {expense?.notes && (
+        {/* expense.description is the field from SQLite, not notes */}
+        {expense?.description && (
           <RNView style={styles.notesSection}>
-            <Text style={styles.detailLabel}>Notes:</Text>
-            <Text style={styles.notes}>{expense.notes}</Text>
+            <Text style={styles.detailLabel}>Description:</Text>
+            <Text style={styles.notes}>{expense.description}</Text>
           </RNView>
         )}
 

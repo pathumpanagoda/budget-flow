@@ -6,7 +6,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import CategoryItem from '../../components/CategoryItem';
-import { getCategories, getExpenses } from '../../services/firebaseService';
+import { getCategories, getExpenses } from '../../services/sqliteService'; // Changed
 import { useTheme } from '../../context/theme';
 
 export default function CategoryScreen() {
@@ -20,21 +20,22 @@ export default function CategoryScreen() {
       setLoading(true);
       
       // Fetch both categories and expenses
-      const [categoriesData, expensesData] = await Promise.all([
-        getCategories(),
-        getExpenses()
+      const [categoriesData, allExpenses] = await Promise.all([
+        getCategories(), // sqliteService returns array
+        getExpenses()    // sqliteService returns array
       ]);
       
       // Calculate totals for each category
       const categoriesWithTotals = categoriesData.map(category => {
-        const categoryExpenses = expensesData.filter(expense => expense.categoryId === category.id);
+        const categoryExpenses = allExpenses.filter(expense => expense.categoryId === category.id);
         const totalAmount = categoryExpenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
         const expenseCount = categoryExpenses.length;
         
         return {
           ...category,
           totalAmount,
-          expenseCount
+          expenseCount,
+          // description: category.description || '', // Ensure description exists if CategoryItem uses it
         };
       });
       

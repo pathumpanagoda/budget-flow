@@ -6,7 +6,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import Card from '../../../components/Card';
 import Button from '../../../components/Button';
 import ExpenseItem from '../../../components/ExpenseItem';
-import { getExpenses, getCategories, deleteCategory } from '../../../services/firebaseService';
+import { getExpenses, getCategories, deleteCategory } from '../../../services/sqliteService';
 import { useTheme } from '../../../context/theme';
 
 export default function CategoryDetailScreen() {
@@ -21,26 +21,28 @@ export default function CategoryDetailScreen() {
     try {
       setLoading(true);
       
-      const [categoriesData, expensesData] = await Promise.all([
-        getCategories(),
-        getExpenses(id)
+      const [categoriesData, expensesForCategory] = await Promise.all([
+        getCategories(), // Fetches all categories
+        getExpenses(id)  // Fetches expenses for the specific categoryId
       ]);
       
       const foundCategory = categoriesData.find(cat => cat.id === id);
       if (!foundCategory) {
-        Alert.alert('Error', 'Category not found');
+        Alert.alert('Error', `Category with ID ${id} not found.`);
         router.back();
         return;
       }
       
-      // Calculate total amount from expenses
-      const totalAmount = expensesData.reduce((sum, expense) => sum + (expense.amount || 0), 0);
+      // Calculate total amount from the fetched expensesForCategory
+      const totalAmount = expensesForCategory.reduce((sum, expense) => sum + (expense.amount || 0), 0);
       
       setCategory({
         ...foundCategory,
-        totalAmount: totalAmount
+        totalAmount: totalAmount,
+        // description might not exist on category from DB, ensure it's handled if used
+        description: foundCategory.description || '', 
       });
-      setExpenses(expensesData);
+      setExpenses(expensesForCategory);
     } catch (error) {
       console.error('Error fetching category data:', error);
       Alert.alert('Error', 'Could not load category data. Please try again.');
@@ -164,7 +166,8 @@ export default function CategoryDetailScreen() {
             title={expense.title}
             amount={expense.amount}
             status={expense.status}
-            assignedTo={expense.assignedTo}
+              // assignedTo={expense.assignedTo} // Similar to all-expenses.js, using funderId
+              funderId={expense.funderId} 
             onPress={() => router.push(`/expense/${expense.id}`)}
           />
         ))

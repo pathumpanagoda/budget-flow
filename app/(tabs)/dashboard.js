@@ -5,7 +5,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import BudgetSummary from '../../components/BudgetSummary';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
-import { getBudgetSummary, getExpenses, getCategories, getFunders } from '../../services/firebaseService';
+import { getBudgetSummary, getExpenses, getCategories, getFunders } from '../../services/sqliteService'; // Changed
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useTheme } from '../../context/theme';
@@ -40,26 +40,33 @@ export default function DashboardScreen() {
     try {
       setLoading(true);
       
-      const [budgetData, expensesData, categoriesData, fundersData] = await Promise.all([
-        getBudgetSummary(),
-        getExpenses(),
-        getCategories(),
-        getFunders()
+      const [budgetDataFromService, expensesData, categoriesData, fundersData] = await Promise.all([
+        getBudgetSummary(), // sqliteService returns the summary object directly
+        getExpenses(),    // sqliteService returns array
+        getCategories(),  // sqliteService returns array
+        getFunders()      // sqliteService returns array
       ]);
       
-      // Calculate total budget as sum of all expenses
-      const totalBudget = expensesData.reduce((sum, expense) => sum + (expense.amount || 0), 0);
-      
-      // Calculate received fund as sum of expenses with status "Received"
-      const receivedFund = expensesData
+      // Use budgetDataFromService directly if it matches the structure.
+      // The existing logic recalculates totalBudget and receivedFund from expenses,
+      // which might be desired over what's in the budget table.
+      // Let's stick to the existing recalculation logic for now.
+      const totalOverallBudget = expensesData.reduce((sum, expense) => sum + (expense.amount || 0), 0);
+      const totalReceivedFund = expensesData
         .filter(expense => expense.status === 'Received')
         .reduce((sum, expense) => sum + (expense.amount || 0), 0);
       
+      // The budgetSummary state should reflect the fields from the 'budget' table via getBudgetSummary
+      // However, the UI component BudgetSummary seems to expect totalBudget, receivedFund, remainingFund.
+      // The firebase version calculated these from expenses.
+      // The sqlite getBudgetSummary returns { totalBudget, receivedFund, peopleOverFund, remainingFund, updatedAt }
+      // For consistency with previous behavior, we can use calculated values, or update BudgetSummary component.
+      // Let's use calculated values for now and use `budgetDataFromService` for `peopleOverFund` if needed.
       setBudgetSummary({
-        totalBudget,
-        receivedFund,
-        remainingFund: totalBudget - receivedFund,
-        peopleOverFund: 0, // This is not used anymore
+        totalBudget: totalOverallBudget,
+        receivedFund: totalReceivedFund,
+        remainingFund: totalOverallBudget - totalReceivedFund,
+        peopleOverFund: budgetDataFromService?.peopleOverFund || 0, // Use from service if available
       });
       
       // Calculate status counts and amounts
@@ -148,12 +155,14 @@ export default function DashboardScreen() {
 
       // Get recent expenses
       const sortedExpenses = [...expensesData]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        // SQLite stores createdAt as ISO string. Date constructor handles this.
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 5);
       
       setRecentExpenses(sortedExpenses);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // Add user-facing error alert here if appropriate
     } finally {
       setLoading(false);
     }
@@ -338,18 +347,19 @@ export default function DashboardScreen() {
                         <th>Title</th>
                         <th>Amount</th>
                         <th>Status</th>
-                        <th>Assigned To</th>
+                        <th>Funder ID</th> {/* Changed from Assigned To */}
                         <th>Date</th>
                     </tr>
-                    ${recentExpenses
+                    {expensesData // Use all expensesData for filtering by category for the report
                         .filter(expense => expense.categoryId === category.id)
                         .map(expense => `
                             <tr>
                                 <td>${expense.title}</td>
                                 <td class="amount">Rs. ${expense.amount.toLocaleString()}</td>
-                                <td class="${expense.status === 'Pending' ? 'status-took-over' : ''}">${expense.status}</td>
-                                <td>${expense.status === 'Pending' ? expense.takenOverBy : (expense.assignedTo || 'Not Assigned')}</td>
-                                <td>${new Date(expense.createdAt).toLocaleDateString()}</td>
+                                <td class="${expense.status === 'Pending' ? 'status-took-over' : ''}">${expense.status || 'N/A'}</td>
+                                <td>${expense.funderId || 'Not Assigned'}</td>
+                                {/* Ensure createdAt is valid for Date constructor */}
+                                <td>${expense.createdAt ? new Date(expense.createdAt).toLocaleDateString() : 'N/A'}</td>
                             </tr>
                         `).join('')}
                 </table>
@@ -382,16 +392,17 @@ export default function DashboardScreen() {
                 <th>Title</th>
                 <th>Amount</th>
                 <th>Status</th>
-                <th>Assigned To</th>
+                <th>Funder ID</th> {/* Changed from Assigned To */}
                 <th>Date</th>
             </tr>
             ${recentExpenses.map(expense => `
                 <tr>
                     <td>${expense.title}</td>
                     <td class="amount">Rs. ${expense.amount.toLocaleString()}</td>
-                    <td class="${expense.status === 'Pending' ? 'status-took-over' : ''}">${expense.status}</td>
-                    <td>${expense.status === 'Pending' ? expense.takenOverBy : (expense.assignedTo || 'Not Assigned')}</td>
-                    <td>${new Date(expense.createdAt).toLocaleDateString()}</td>
+                    <td class="${expense.status === 'Pending' ? 'status-took-over' : ''}">${expense.status || 'N/A'}</td>
+                    <td>${expense.funderId || 'Not Assigned'}</td>
+                     {/* Ensure createdAt is valid for Date constructor */}
+                    <td>${expense.createdAt ? new Date(expense.createdAt).toLocaleDateString() : 'N/A'}</td>
                 </tr>
             `).join('')}
         </table>
@@ -554,9 +565,9 @@ export default function DashboardScreen() {
                 <Text style={[styles.recentExpenseAmount, { color: colors.primary }]}>Rs. {expense.amount.toLocaleString()}</Text>
               </RNView>
               <RNView style={styles.recentExpenseDetails}>
-                <Text style={styles.recentExpenseStatus}>{expense.status}</Text>
+                <Text style={styles.recentExpenseStatus}>{expense.status || 'N/A'}</Text>
                 <Text style={styles.recentExpenseDate}>
-                  {new Date(expense.createdAt).toLocaleDateString()}
+                  {expense.createdAt ? new Date(expense.createdAt).toLocaleDateString() : 'N/A'}
                 </Text>
               </RNView>
             </RNView>

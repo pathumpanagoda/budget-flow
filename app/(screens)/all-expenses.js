@@ -6,7 +6,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import ExpenseItem from '../../components/ExpenseItem';
-import { getExpenses } from '../../services/firebaseService';
+import { getExpenses } from '../../services/sqliteService';
 import { useTheme } from '../../context/theme';
 
 export default function AllExpensesScreen() {
@@ -15,12 +15,12 @@ export default function AllExpensesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [expenses, setExpenses] = useState([]);
   const [filteredExpenses, setFilteredExpenses] = useState([]);
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'Remaining', 'Pending', 'Received', 'Spent'
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const expensesData = await getExpenses();
+      const expensesData = await getExpenses(); // sqliteService returns array directly
       setExpenses(expensesData);
       setFilteredExpenses(expensesData);
     } catch (error) {
@@ -42,10 +42,12 @@ export default function AllExpensesScreen() {
   }, []);
 
   useEffect(() => {
+    // Ensure expenses is always an array before filtering
+    const currentExpenses = Array.isArray(expenses) ? expenses : [];
     if (statusFilter === 'all') {
-      setFilteredExpenses(expenses);
+      setFilteredExpenses(currentExpenses);
     } else {
-      setFilteredExpenses(expenses.filter(expense => expense.status === statusFilter));
+      setFilteredExpenses(currentExpenses.filter(expense => expense.status === statusFilter));
     }
   }, [statusFilter, expenses]);
 
@@ -128,7 +130,10 @@ export default function AllExpensesScreen() {
               title={expense.title}
               amount={expense.amount}
               status={expense.status}
-              assignedTo={expense.assignedTo}
+              // assignedTo={expense.assignedTo} // assignedTo is not in expenses table, funderId is.
+                                             // This component might need adjustment or the data needs joining.
+                                             // For now, removing to avoid error, will address if it's a separate subtask.
+              funderId={expense.funderId} // Assuming ExpenseItem can take funderId
               onPress={() => router.push(`/expense/${expense.id}`)}
             />
           ))

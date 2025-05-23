@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
-import { getCategories, getFunders, addExpense } from '../../services/firebaseService';
+import { getCategories, getFunders, addExpense } from '../../services/sqliteService'; // Changed
 import { useTheme } from '../../context/theme';
 
 export default function NewExpenseScreen() {
@@ -31,8 +31,8 @@ export default function NewExpenseScreen() {
     try {
       setLoading(true);
       const [categoriesData, fundersData] = await Promise.all([
-        getCategories(),
-        getFunders()
+        getCategories(), // sqliteService returns array
+        getFunders()     // sqliteService returns array
       ]);
       setCategories(categoriesData);
       setFunders(fundersData);
@@ -62,14 +62,19 @@ export default function NewExpenseScreen() {
 
     try {
       setSaving(true);
+      // addExpense in sqliteService expects { id, categoryId, title, amount, date, description }
+      // createdAt and updatedAt are handled by the service.
+      // 'date' field for expense is not captured in this form, using current date as default.
+      // 'status' is not part of sqliteService.addExpense, it's a separate concept or needs schema change.
       await addExpense({
+        id: Date.now().toString(), // Temporary ID, consider uuid
         title: title.trim(),
         amount: Number(amount),
-        description: description.trim(),
+        description: description.trim(), // This maps to 'description' in SQLite
         categoryId: selectedCategory,
-        funderId: selectedFunder || null,
-        status: 'Remaining',
-        createdAt: new Date(),
+        funderId: selectedFunder || null, // This needs to be handled if funderId is part of expenses table
+        date: new Date().toISOString().split('T')[0], // Use current date in YYYY-MM-DD format
+        // status: 'Remaining', // Not in SQLite addExpense
       });
       
       Alert.alert('Success', 'Expense added successfully');

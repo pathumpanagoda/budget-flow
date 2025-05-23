@@ -4,7 +4,7 @@ import { Text, View } from '../../components/Themed';
 import { router } from 'expo-router';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
-import { addCategory } from '../../services/firebaseService';
+import { addCategory } from '../../services/sqliteService'; // Changed to sqliteService
 import { useTheme } from '../../context/theme';
 
 export default function NewCategoryScreen() {
@@ -22,11 +22,14 @@ export default function NewCategoryScreen() {
     try {
       setLoading(true);
       
+      // addCategory in sqliteService expects { id, name }
+      // createdAt is handled by the service.
+      // description, expenseCount, totalAmount are not in the SQLite 'categories' table.
       await addCategory({
+        id: Date.now().toString(), // Temporary ID, consider uuid
         name: name.trim(),
-        description: description.trim(),
-        expenseCount: 0,
-        totalAmount: 0,
+        // description: description.trim(), // Not in SQLite table
+        // expenseCount and totalAmount are not part of category creation; they are derived.
       });
       
       Alert.alert(

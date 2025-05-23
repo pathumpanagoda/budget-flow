@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { FontAwesome5 } from '@expo/vector-icons';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
-import { getFunders, addFunder, updateFunder, deleteFunder } from '../../services/firebaseService';
+import { getFunders, addFunder, deleteFunder } from '../../services/sqliteService'; // updateFunder might not be used or needed
 import { useTheme } from '../../context/theme';
 
 export default function FundersScreen() {
@@ -15,13 +15,14 @@ export default function FundersScreen() {
   const [funders, setFunders] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newFunderName, setNewFunderName] = useState('');
-  const [newFunderPhone, setNewFunderPhone] = useState('');
-  const [newFunderEmail, setNewFunderEmail] = useState('');
+  // const [newFunderPhone, setNewFunderPhone] = useState(''); // Not in SQLite
+  // const [newFunderEmail, setNewFunderEmail] = useState(''); // Not in SQLite
+  const [newFunderAmount, setNewFunderAmount] = useState(''); // Added for SQLite 'amount'
 
   const fetchFunders = async () => {
     try {
       setLoading(true);
-      const fundersData = await getFunders();
+      const fundersData = await getFunders(); // sqliteService returns array
       setFunders(fundersData);
     } catch (error) {
       console.error('Error fetching funders:', error);
@@ -38,23 +39,32 @@ export default function FundersScreen() {
   };
 
   const handleAddFunder = async () => {
-    if (!newFunderName.trim()) {
+    const name = newFunderName.trim();
+    const amount = parseFloat(newFunderAmount);
+
+    if (!name) {
       Alert.alert('Error', 'Please enter a funder name');
+      return;
+    }
+    if (isNaN(amount) || amount < 0) {
+      Alert.alert('Error', 'Please enter a valid positive amount');
       return;
     }
 
     try {
+      // addFunder in sqliteService expects {id, name, amount}
       await addFunder({
-        name: newFunderName.trim(),
-        phone: newFunderPhone.trim(),
-        email: newFunderEmail.trim(),
+        id: Date.now().toString(), // Temporary ID, consider uuid
+        name,
+        amount,
       });
       
       setNewFunderName('');
-      setNewFunderPhone('');
-      setNewFunderEmail('');
+      setNewFunderAmount('');
+      // setNewFunderPhone('');
+      // setNewFunderEmail('');
       setShowAddForm(false);
-      await fetchFunders();
+      await fetchFunders(); // Re-fetch to get the new list
       Alert.alert('Success', 'Funder added successfully');
     } catch (error) {
       console.error('Error adding funder:', error);
@@ -130,34 +140,21 @@ export default function FundersScreen() {
             placeholderTextColor={colors.text}
           />
 
-          <Text style={styles.label}>Phone (Optional)</Text>
+          <Text style={[styles.label, { color: colors.textOnSurface }]}>Amount</Text>
           <TextInput
             style={[styles.input, { 
               backgroundColor: colors.card,
               borderColor: colors.border,
               color: colors.text,
             }]}
-            value={newFunderPhone}
-            onChangeText={setNewFunderPhone}
-            placeholder="Enter phone number"
+            value={newFunderAmount}
+            onChangeText={setNewFunderAmount}
+            placeholder="Enter amount funded"
             placeholderTextColor={colors.text}
-            keyboardType="phone-pad"
+            keyboardType="numeric"
           />
 
-          <Text style={styles.label}>Email (Optional)</Text>
-          <TextInput
-            style={[styles.input, { 
-              backgroundColor: colors.card,
-              borderColor: colors.border,
-              color: colors.text,
-            }]}
-            value={newFunderEmail}
-            onChangeText={setNewFunderEmail}
-            placeholder="Enter email address"
-            placeholderTextColor={colors.text}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          {/* Phone and Email fields removed */}
 
           <Button
             title="Add Funder"
@@ -189,16 +186,15 @@ export default function FundersScreen() {
                 <FontAwesome5 name="trash" size={16} color={colors.error} />
               </TouchableOpacity>
             </RNView>
-            {funder.phone && (
-              <Text style={styles.funderDetail}>
-                <FontAwesome5 name="phone" size={14} color={colors.text} /> {funder.phone}
+            <Text style={[styles.funderDetail, { color: colors.textOnSurface }]}>
+              Amount: Rs. {funder.amount ? funder.amount.toLocaleString() : '0'}
+            </Text>
+            {funder.createdAt && (
+              <Text style={[styles.funderDetail, { color: colors.textMuted }]}>
+                Added: {new Date(funder.createdAt).toLocaleDateString()}
               </Text>
             )}
-            {funder.email && (
-              <Text style={styles.funderDetail}>
-                <FontAwesome5 name="envelope" size={14} color={colors.text} /> {funder.email}
-              </Text>
-            )}
+            {/* Phone and Email details removed */}
           </Card>
         ))
       )}

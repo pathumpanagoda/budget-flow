@@ -6,7 +6,7 @@ import Card from '../../../components/Card';
 import Button from '../../../components/Button';
 import { Picker } from '@react-native-picker/picker';
 import { MaterialIcons } from '@expo/vector-icons';
-import { getExpense, updateExpense, getCategories, getFunders } from '../../../services/firebaseService';
+import { getExpense, updateExpense, getCategories, getFunders } from '../../../services/sqliteService';
 import { useTheme } from '../../../context/theme';
 
 export default function EditExpenseScreen() {
@@ -37,8 +37,8 @@ export default function EditExpenseScreen() {
         setLoading(true);
         setError(null);
         
-        const expenseData = await getExpense(id);
-        if (!expenseData) {
+        const expenseItem = await getExpense(id); // sqliteService returns the item directly
+        if (!expenseItem) {
           setError('Expense not found');
           Alert.alert('Error', 'Expense not found');
           router.back();
@@ -46,19 +46,19 @@ export default function EditExpenseScreen() {
         }
 
         const [categoriesData, fundersData] = await Promise.all([
-          getCategories(),
-          getFunders()
+          getCategories(), // sqliteService returns array
+          getFunders()     // sqliteService returns array
         ]);
 
-        setTitle(expenseData.title);
-        setAmount(expenseData.amount.toString());
-        setCategoryId(expenseData.categoryId);
-        setFunderId(expenseData.funderId || '');
-        setStatus(expenseData.status);
-        setNotes(expenseData.notes || '');
+        setTitle(expenseItem.title);
+        setAmount(expenseItem.amount.toString());
+        setCategoryId(expenseItem.categoryId);
+        setFunderId(expenseItem.funderId || '');
+        setStatus(expenseItem.status);
+        setNotes(expenseItem.notes || ''); // notes field is not in sqlite expenses table
         setCategories(categoriesData);
         setFunders(fundersData);
-        setInitialData(expenseData);
+        setInitialData(expenseItem);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Could not load expense data');
@@ -79,11 +79,11 @@ export default function EditExpenseScreen() {
 
     const hasChanges = 
       title !== initialData.title ||
-      amount !== initialData.amount.toString() ||
+      amount !== initialData.amount.toString() || // amount is REAL in SQLite, toString for comparison
       categoryId !== initialData.categoryId ||
       funderId !== (initialData.funderId || '') ||
       status !== initialData.status ||
-      notes !== (initialData.notes || '');
+      notes !== (initialData.notes || ''); // notes field is not in sqlite expenses table
 
     if (hasChanges) {
       Alert.alert(
@@ -137,9 +137,10 @@ export default function EditExpenseScreen() {
         title: title.trim(),
         amount: numAmount,
         categoryId,
-        funderId: funderId || null,
+        funderId: funderId || null, 
         status,
-        notes: sanitizeNotes(notes.trim()) || null,
+        // notes: sanitizeNotes(notes.trim()) || null, // notes field is not in sqlite expenses table
+        description: sanitizeNotes(notes.trim()) || null, // Assuming 'notes' field was meant to be 'description'
       });
 
       Alert.alert(
