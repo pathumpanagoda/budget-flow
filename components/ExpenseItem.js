@@ -66,9 +66,9 @@ export default function ExpenseItem({
 const styles = StyleSheet.create({
   container: {
     borderRadius: 10,
-    padding: 16,
-    marginVertical: 8,
-    marginHorizontal: 16,
+    padding: 12,
+    marginVertical: 5,
+    marginHorizontal: 0,
     shadowOffset: {
       width: 0,
       height: 1,

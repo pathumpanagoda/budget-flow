@@ -6,7 +6,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import Card from '../../../components/Card';
 import Button from '../../../components/Button';
 import ExpenseItem from '../../../components/ExpenseItem';
-import { getExpenses, getCategories, deleteCategory, listenExpenses, listenCategories } from '../../../services/firebaseService';
+import { getExpenses, getCategories, deleteCategory } from '../../../services/firebaseService';
 import { useTheme } from '../../../context/theme';
 
 export default function CategoryDetailScreen() {
@@ -81,27 +81,6 @@ export default function CategoryDetailScreen() {
 
   useEffect(() => {
     fetchData();
-    // Real-time category updates
-    const unsubCats = listenCategories((catsLive) => {
-      const foundCategory = catsLive.find(cat => cat.id === id);
-      if (foundCategory) {
-        setCategory(prev => ({ ...prev, ...foundCategory }));
-      }
-    });
-    // Real-time expenses for this category
-    const unsubExpenses = listenExpenses(id, (expensesLive) => {
-      const expensesData = expensesLive.map(exp => ({
-        ...exp,
-        createdAt: exp.createdAt?.toDate ? exp.createdAt.toDate().toISOString() : exp.createdAt,
-      }));
-      const totalAmount = expensesData.reduce((sum, e) => sum + (e.amount || 0), 0);
-      setExpenses(expensesData);
-      setCategory(prev => prev ? { ...prev, totalAmount } : prev);
-    });
-    return () => {
-      unsubCats && unsubCats();
-      unsubExpenses && unsubExpenses();
-    };
   }, [id]);
 
   if (loading) {
@@ -187,6 +166,7 @@ export default function CategoryDetailScreen() {
             status={expense.status}
             assignedTo={expense.assignedTo}
             onPress={() => router.push(`/expense/${expense.id}`)}
+            style={styles.expenseItem}
           />
         ))
       )}
@@ -270,5 +250,9 @@ const styles = StyleSheet.create({
   },
   firstButton: {
     width: '100%',
+  },
+  expenseItem: {
+    marginHorizontal: 16,
+    marginBottom: 8,
   },
 }); 
