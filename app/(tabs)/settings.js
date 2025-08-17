@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { StyleSheet, View as RNView, TouchableOpacity, Switch, Alert, ScrollView } from 'react-native';
+import { StyleSheet, View as RNView, TouchableOpacity, Switch, Alert, Linking } from 'react-native';
 import { Text, View } from '../../components/Themed';
 import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import { useAuth } from '../../context/auth';
 import { useTheme } from '../../context/theme';
+import { router } from 'expo-router';
 
 export default function SettingsScreen() {
   const { user, logOut } = useAuth();
@@ -33,7 +34,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <Card style={styles.profileCard}>
+      {/* <Card style={styles.profileCard}>
         {user ? (
           <RNView style={styles.userInfo}>
             <RNView style={styles.avatarContainer}>
@@ -55,7 +56,7 @@ export default function SettingsScreen() {
             />
           </RNView>
         )}
-      </Card>
+      </Card> */}
 
       <Card style={styles.optionsCard}>
         <RNView style={styles.settingItem}>
@@ -86,7 +87,7 @@ export default function SettingsScreen() {
       </Card>
 
       <Card style={styles.optionsCard}>
-        <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+  <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/help')}>
           <RNView style={styles.menuTextContainer}>
             <MaterialIcons name="help-outline" size={24} color="#0F6E66" />
             <Text style={styles.menuText}>Help & Support</Text>
@@ -94,7 +95,7 @@ export default function SettingsScreen() {
           <MaterialIcons name="chevron-right" size={24} color="#9E9E9E" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+  <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/about')}>
           <RNView style={styles.menuTextContainer}>
             <MaterialIcons name="info-outline" size={24} color="#0F6E66" />
             <Text style={styles.menuText}>About</Text>
@@ -110,6 +111,18 @@ export default function SettingsScreen() {
             </RNView>
           </TouchableOpacity>
         )}
+      </Card>
+
+      <Card style={styles.optionsCard}>
+        <Text style={styles.devHeader}>Developer</Text>
+        <RNView style={styles.devRow}>
+          <MaterialIcons name="person" size={22} color="#0F6E66" />
+          <Text style={styles.devText}>Dilshan Pathum</Text>
+        </RNView>
+        <TouchableOpacity style={styles.devRow} onPress={() => Linking.openURL('mailto:pathumpanagoda@gmail.com')}>
+          <MaterialIcons name="email" size={22} color="#0F6E66" />
+          <Text style={[styles.devText, styles.devLink]}>pathumpanagoda@gmail.com</Text>
+        </TouchableOpacity>
       </Card>
 
       <Text style={styles.versionText}>Version 1.0.0</Text>
@@ -214,5 +227,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#9E9E9E',
     marginTop: 24,
+  },
+  devHeader: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  devRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    gap: 12,
+  },
+  devText: {
+    fontSize: 15,
+  },
+  devLink: {
+    textDecorationLine: 'underline',
   },
 }); 

@@ -11,6 +11,7 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
@@ -120,6 +121,60 @@ export const getExpenses = async (categoryId = null) => {
   } catch (error) {
     console.error('Error getting expenses:', error);
     throw error;
+  }
+};
+
+// Real-time listener for expenses
+export const listenExpenses = (categoryId = null, callback) => {
+  try {
+    const expensesRef = collection(db, 'expenses');
+    let q;
+    if (categoryId) {
+      q = query(
+        expensesRef,
+        where('categoryId', '==', categoryId),
+        orderBy('createdAt', 'desc')
+      );
+    } else {
+      q = query(expensesRef, orderBy('createdAt', 'desc'));
+    }
+    return onSnapshot(q, (snapshot) => {
+      const expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      callback(expenses);
+    });
+  } catch (error) {
+    console.error('Error listening to expenses:', error);
+    return () => {};
+  }
+};
+
+// Real-time listener for categories
+export const listenCategories = (callback) => {
+  try {
+    const categoriesRef = collection(db, 'categories');
+    const q = query(categoriesRef, orderBy('name'));
+    return onSnapshot(q, (snapshot) => {
+      const categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      callback(categories);
+    });
+  } catch (error) {
+    console.error('Error listening to categories:', error);
+    return () => {};
+  }
+};
+
+// Real-time listener for funders
+export const listenFunders = (callback) => {
+  try {
+    const fundersRef = collection(db, 'funders');
+    const q = query(fundersRef, orderBy('name'));
+    return onSnapshot(q, (snapshot) => {
+      const funders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      callback(funders);
+    });
+  } catch (error) {
+    console.error('Error listening to funders:', error);
+    return () => {};
   }
 };
 

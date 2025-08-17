@@ -6,7 +6,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import ExpenseItem from '../../components/ExpenseItem';
-import { getExpenses } from '../../services/firebaseService';
+import { getExpenses, listenExpenses } from '../../services/firebaseService';
 import { useTheme } from '../../context/theme';
 
 export default function AllExpensesScreen() {
@@ -20,7 +20,12 @@ export default function AllExpensesScreen() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const expensesData = await getExpenses();
+      const expensesDataRaw = await getExpenses();
+      const expensesData = expensesDataRaw.map(exp => ({
+        ...exp,
+        createdAt: exp.createdAt?.toDate ? exp.createdAt.toDate().toISOString() : exp.createdAt,
+        updatedAt: exp.updatedAt?.toDate ? exp.updatedAt.toDate().toISOString() : exp.updatedAt,
+      }));
       setExpenses(expensesData);
       setFilteredExpenses(expensesData);
     } catch (error) {
@@ -39,6 +44,18 @@ export default function AllExpensesScreen() {
 
   useEffect(() => {
     fetchData();
+    const unsubscribe = listenExpenses(null, (expensesLive) => {
+      const expensesData = expensesLive.map(exp => ({
+        ...exp,
+        createdAt: exp.createdAt?.toDate ? exp.createdAt.toDate().toISOString() : exp.createdAt,
+      }));
+      setExpenses(expensesData);
+      setFilteredExpenses(prev => {
+        if (statusFilter === 'all') return expensesData;
+        return expensesData.filter(e => e.status === statusFilter);
+      });
+    });
+    return () => unsubscribe && unsubscribe();
   }, []);
 
   useEffect(() => {

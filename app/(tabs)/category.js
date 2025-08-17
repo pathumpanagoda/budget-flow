@@ -6,7 +6,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import CategoryItem from '../../components/CategoryItem';
-import { getCategories, getExpenses } from '../../services/firebaseService';
+import { getCategories, getExpenses, listenCategories, listenExpenses } from '../../services/firebaseService';
 import { useTheme } from '../../context/theme';
 
 export default function CategoryScreen() {
@@ -55,6 +55,31 @@ export default function CategoryScreen() {
 
   useEffect(() => {
     fetchData();
+    // Real-time categories
+    const unsubCats = listenCategories((catsLive) => {
+      // When categories change, refetch expenses once (could optimize with expense listener aggregation)
+      getExpenses().then(expensesData => {
+        const categoriesWithTotals = catsLive.map(category => {
+          const categoryExpenses = expensesData.filter(expense => expense.categoryId === category.id);
+          const totalAmount = categoryExpenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
+          const expenseCount = categoryExpenses.length;
+          return { ...category, totalAmount, expenseCount };
+        });
+        setCategories(categoriesWithTotals);
+      }).catch(err => console.error('Error updating categories live:', err));
+    });
+    // Real-time expenses (to keep totals current when expense status/amount changes)
+    const unsubExpenses = listenExpenses(null, (expensesLive) => {
+      setCategories(prevCats => prevCats.map(cat => {
+        const categoryExpenses = expensesLive.filter(e => e.categoryId === cat.id);
+        const totalAmount = categoryExpenses.reduce((s,e)=> s + (e.amount || 0), 0);
+        return { ...cat, totalAmount, expenseCount: categoryExpenses.length };
+      }));
+    });
+    return () => {
+      unsubCats && unsubCats();
+      unsubExpenses && unsubExpenses();
+    };
   }, []);
 
   if (loading) {

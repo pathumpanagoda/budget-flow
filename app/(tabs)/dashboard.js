@@ -5,7 +5,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import BudgetSummary from '../../components/BudgetSummary';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
-import { getBudgetSummary, getExpenses, getCategories, getFunders } from '../../services/firebaseService';
+import { getBudgetSummary, getExpenses, getCategories, getFunders, listenExpenses, listenCategories, listenFunders } from '../../services/firebaseService';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useTheme } from '../../context/theme';
@@ -34,18 +34,25 @@ export default function DashboardScreen() {
   });
   const [categoryBreakdown, setCategoryBreakdown] = useState([]);
   const [funderBreakdown, setFunderBreakdown] = useState([]);
+  const [funderMap, setFunderMap] = useState({}); // id -> name for report usage
   const [recentExpenses, setRecentExpenses] = useState([]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       
-      const [budgetData, expensesData, categoriesData, fundersData] = await Promise.all([
+      const [budgetData, expensesDataRaw, categoriesData, fundersData] = await Promise.all([
         getBudgetSummary(),
         getExpenses(),
         getCategories(),
         getFunders()
       ]);
+      // Normalize Firestore Timestamp fields to ISO strings for reliable Date handling
+      const expensesData = expensesDataRaw.map(exp => ({
+        ...exp,
+        createdAt: exp.createdAt?.toDate ? exp.createdAt.toDate().toISOString() : exp.createdAt,
+        updatedAt: exp.updatedAt?.toDate ? exp.updatedAt.toDate().toISOString() : exp.updatedAt,
+      }));
       
       // Calculate total budget as sum of all expenses
       const totalBudget = expensesData.reduce((sum, expense) => sum + (expense.amount || 0), 0);
@@ -144,11 +151,15 @@ export default function DashboardScreen() {
         .filter(funder => funder.totalAmount > 0)
         .sort((a, b) => b.totalAmount - a.totalAmount);
       
-      setFunderBreakdown(funderBreakdownData);
+  setFunderBreakdown(funderBreakdownData);
+  // Build simple id->name map for reporting
+  const funderNameMap = {};
+  fundersData.forEach(f => { funderNameMap[f.id] = f.name; });
+  setFunderMap(funderNameMap);
 
       // Get recent expenses
       const sortedExpenses = [...expensesData]
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
         .slice(0, 5);
       
       setRecentExpenses(sortedExpenses);
@@ -167,6 +178,93 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     fetchData();
+    // Real-time updates for expenses
+  const unsubExpenses = listenExpenses(null, (expensesLive) => {
+      // Normalize timestamps
+      const expensesData = expensesLive.map(exp => ({
+        ...exp,
+        createdAt: exp.createdAt?.toDate ? exp.createdAt.toDate().toISOString() : exp.createdAt,
+      }));
+
+      // Recalculate summaries dependent on expenses only
+      const totalBudget = expensesData.reduce((sum, expense) => sum + (expense.amount || 0), 0);
+      const receivedFund = expensesData
+        .filter(expense => expense.status === 'Received')
+        .reduce((sum, expense) => sum + (expense.amount || 0), 0);
+      setBudgetSummary(prev => ({
+        ...prev,
+        totalBudget,
+        receivedFund,
+        remainingFund: totalBudget - receivedFund,
+      }));
+
+      const counts = { remaining:0, pending:0, received:0, spent:0 };
+      const amounts = { remaining:0, pending:0, received:0, spent:0 };
+      expensesData.forEach(expense => {
+        if (expense.status === 'Outstanding') { counts.remaining++; amounts.remaining += expense.amount || 0; }
+        else if (expense.status === 'Pending') { counts.pending++; amounts.pending += expense.amount || 0; }
+        else if (expense.status === 'Received') { counts.received++; amounts.received += expense.amount || 0; }
+        else if (expense.status === 'Spent') { counts.spent++; amounts.spent += expense.amount || 0; }
+      });
+      setStatusCounts(counts);
+      setStatusAmounts(amounts);
+
+      // Recompute category breakdown using current categories state
+      setCategoryBreakdown(prevCats => {
+        const catMap = {}; // id -> {id,name,totalAmount,count}
+        prevCats.forEach(c => { catMap[c.id] = { ...c, totalAmount:0, count:0 }; });
+        expensesData.forEach(exp => {
+          if (exp.categoryId && catMap[exp.categoryId]) {
+            catMap[exp.categoryId].totalAmount += exp.amount || 0;
+            catMap[exp.categoryId].count += 1;
+          }
+        });
+        return Object.values(catMap).sort((a,b)=> b.totalAmount - a.totalAmount);
+      });
+
+      // Recompute funder breakdown using current funderMap
+      setFunderBreakdown(prev => {
+        const funderBase = {}; // id -> {id,name,totalAmount,count}
+        Object.entries(funderMap).forEach(([id,name])=> { funderBase[id]={ id, name, totalAmount:0, count:0 }; });
+        expensesData.forEach(exp => {
+          if (exp.funderId && funderBase[exp.funderId]) {
+            funderBase[exp.funderId].totalAmount += exp.amount || 0;
+            funderBase[exp.funderId].count += 1;
+          }
+        });
+        return Object.values(funderBase).sort((a,b)=> b.totalAmount - a.totalAmount);
+      });
+
+      // Recent expenses
+      const sortedExpenses = [...expensesData]
+        .sort((a,b)=> new Date(b.createdAt||0)-new Date(a.createdAt||0))
+        .slice(0,5);
+      setRecentExpenses(sortedExpenses);
+    });
+    // Real-time categories
+    const unsubCategories = listenCategories((catsLive) => {
+      // Recompute category breakdown with current expenses
+      setCategoryBreakdown(prev => {
+        // We'll recompute after expenses change; here just map base
+        const map = catsLive.map(c => ({ id: c.id, name: c.name, totalAmount:0, count:0 }));
+        return map;
+      });
+    });
+    // Real-time funders
+    const unsubFunders = listenFunders((fundersLive) => {
+      setFunderBreakdown(prev => {
+        const list = fundersLive.map(f => ({ id: f.id, name: f.name, totalAmount:0, count:0 }));
+        return list;
+      });
+      const funderNameMap = {};
+      fundersLive.forEach(f=> funderNameMap[f.id]=f.name);
+      setFunderMap(funderNameMap);
+    });
+    return () => {
+      unsubExpenses && unsubExpenses();
+      unsubCategories && unsubCategories();
+      unsubFunders && unsubFunders();
+    };
   }, []);
 
   const generateReport = () => {
@@ -286,14 +384,14 @@ export default function DashboardScreen() {
                 <td>Total Budget</td>
                 <td class="amount">Rs. ${budgetSummary.totalBudget.toLocaleString()}</td>
             </tr>
-            <tr>
-                <td>Received Fund</td>
-                <td class="amount">Rs. ${budgetSummary.receivedFund.toLocaleString()}</td>
-            </tr>
-            <tr>
-                <td>Outstanding Fund</td>
-                <td class="amount">Rs. ${(budgetSummary.totalBudget - budgetSummary.receivedFund).toLocaleString()}</td>
-            </tr>
+      <tr>
+        <td>Received (Available + Spent)</td>
+        <td class="amount">Rs. ${(statusAmounts.received + statusAmounts.spent).toLocaleString()}</td>
+      </tr>
+      <tr>
+        <td>Remaining (Outstanding + Pending)</td>
+        <td class="amount">Rs. ${(statusAmounts.remaining + statusAmounts.pending).toLocaleString()}</td>
+      </tr>
         </table>
     </div>
 
@@ -316,7 +414,7 @@ export default function DashboardScreen() {
                 <td class="amount">Rs. ${statusAmounts.pending.toLocaleString()}</td>
             </tr>
             <tr>
-                <td>Received</td>
+                <td>Available</td>
                 <td>${statusCounts.received}</td>
                 <td class="amount">Rs. ${statusAmounts.received.toLocaleString()}</td>
             </tr>
@@ -338,7 +436,7 @@ export default function DashboardScreen() {
                         <th>Title</th>
                         <th>Amount</th>
                         <th>Status</th>
-                        <th>Assigned To</th>
+                        <th>Funder</th>
                         <th>Date</th>
                     </tr>
                     ${recentExpenses
@@ -348,7 +446,7 @@ export default function DashboardScreen() {
                                 <td>${expense.title}</td>
                                 <td class="amount">Rs. ${expense.amount.toLocaleString()}</td>
                                 <td class="${expense.status === 'Pending' ? 'status-took-over' : ''}">${expense.status}</td>
-                                <td>${expense.status === 'Pending' ? expense.takenOverBy : (expense.assignedTo || 'Not Assigned')}</td>
+                                <td>${funderMap[expense.funderId] || 'Not Assigned'}</td>
                                 <td>${new Date(expense.createdAt).toLocaleDateString()}</td>
                             </tr>
                         `).join('')}
@@ -382,7 +480,7 @@ export default function DashboardScreen() {
                 <th>Title</th>
                 <th>Amount</th>
                 <th>Status</th>
-                <th>Assigned To</th>
+                <th>Funder</th>
                 <th>Date</th>
             </tr>
             ${recentExpenses.map(expense => `
@@ -390,7 +488,7 @@ export default function DashboardScreen() {
                     <td>${expense.title}</td>
                     <td class="amount">Rs. ${expense.amount.toLocaleString()}</td>
                     <td class="${expense.status === 'Pending' ? 'status-took-over' : ''}">${expense.status}</td>
-                    <td>${expense.status === 'Pending' ? expense.takenOverBy : (expense.assignedTo || 'Not Assigned')}</td>
+                    <td>${funderMap[expense.funderId] || 'Not Assigned'}</td>
                     <td>${new Date(expense.createdAt).toLocaleDateString()}</td>
                 </tr>
             `).join('')}
@@ -469,22 +567,22 @@ export default function DashboardScreen() {
       <Card style={styles.card}>
         <Text style={styles.sectionTitle}>Expense Status</Text>
         <RNView style={styles.statusCardsContainer}>
-          <RNView style={[styles.statusCard, { backgroundColor: '#ffcccc' }]}>
+          <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(255, 39, 39, 0.63)' : '#FFCCCC' }]}>
             <Text style={styles.statusNumber}>{statusCounts.remaining}</Text>
             <Text style={styles.statusLabel}>Outstanding</Text>
             <Text style={styles.statusAmount}>Rs. {statusAmounts.remaining.toLocaleString()}</Text>
           </RNView>
-          <RNView style={[styles.statusCard, { backgroundColor: '#ffe5b4' }]}>
+          <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(255, 166, 33, 0.7)' : '#FFE0B2' }]}>
             <Text style={styles.statusNumber}>{statusCounts.pending}</Text>
             <Text style={styles.statusLabel}>Pending</Text>
             <Text style={styles.statusAmount}>Rs. {statusAmounts.pending.toLocaleString()}</Text>
           </RNView>
-          <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
+          <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(51, 125, 254, 0.57)' : '#c4d9ffff' }]}>
             <Text style={styles.statusNumber}>{statusCounts.received}</Text>
-            <Text style={styles.statusLabel}>Received</Text>
+            <Text style={styles.statusLabel}>Available</Text>
             <Text style={styles.statusAmount}>Rs. {statusAmounts.received.toLocaleString()}</Text>
           </RNView>
-          <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
+          <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(83, 255, 49, 0.5)' : '#baffacff' }]}>
             <Text style={styles.statusNumber}>{statusCounts.spent}</Text>
             <Text style={styles.statusLabel}>Spent</Text>
             <Text style={styles.statusAmount}>Rs. {statusAmounts.spent.toLocaleString()}</Text>

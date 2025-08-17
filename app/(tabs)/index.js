@@ -8,7 +8,7 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import CategoryItem from '../../components/CategoryItem';
 import ExpenseItem from '../../components/ExpenseItem';
-import { getCategories, getExpenses, getBudgetSummary } from '../../services/firebaseService';
+import { getCategories, getExpenses, getBudgetSummary, listenExpenses, listenCategories } from '../../services/firebaseService';
 import { useTheme } from '../../context/theme';
 
 export default function HomeScreen() {
@@ -104,6 +104,42 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchData();
+  const unsubscribeExpenses = listenExpenses(null, (expensesLive) => {
+      const expensesData = expensesLive.map(exp => ({
+        ...exp,
+        createdAt: exp.createdAt?.toDate ? exp.createdAt.toDate().toISOString() : exp.createdAt,
+      }));
+      // Recompute budget & status totals
+      const totalBudget = expensesData.reduce((sum, e) => sum + (e.amount || 0), 0);
+      const receivedFund = expensesData.filter(e=> e.status==='Received').reduce((s,e)=> s + (e.amount||0),0);
+      setBudgetSummary(prev => ({ ...prev, totalBudget, receivedFund }));
+      const totals = { remaining:0,pending:0,received:0,spent:0 };
+      expensesData.forEach(e=>{
+        if(e.status==='Outstanding') totals.remaining += e.amount||0;
+        else if(e.status==='Pending') totals.pending += e.amount||0;
+        else if(e.status==='Received') totals.received += e.amount||0;
+        else if(e.status==='Spent') totals.spent += e.amount||0;
+      });
+      setStatusTotals(totals);
+      // Update categories amounts (requires categories state)
+      setCategories(prevCats => prevCats.map(cat => {
+        const catExpenses = expensesData.filter(e=> e.categoryId===cat.id);
+        const totalAmount = catExpenses.reduce((s,e)=> s + (e.amount||0),0);
+        return { ...cat, totalAmount, expenseCount: catExpenses.length };
+      }));
+      setRecentExpenses(expensesData.slice(0,5));
+    });
+    // Listen for category additions/updates
+    const unsubscribeCategories = listenCategories((catsLive) => {
+      setCategories(prev => {
+        // Merge updated categories while preserving computed totals (will be recomputed below anyway)
+        return catsLive.map(c => prev.find(p=>p.id===c.id) ? { ...c, ...prev.find(p=>p.id===c.id) } : { ...c, totalAmount:0, expenseCount:0 });
+      });
+    });
+    return () => {
+      unsubscribeExpenses && unsubscribeExpenses();
+      unsubscribeCategories && unsubscribeCategories();
+    };
   }, []);
 
   if (loading) {
@@ -138,19 +174,19 @@ export default function HomeScreen() {
             <Text style={styles.sectionTitle}>Expense Status</Text>
           </RNView>
           <RNView style={styles.statusCardsContainer}>
-            <RNView style={[styles.statusCard, { backgroundColor: colors.border }]}>
+            <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(255, 39, 39, 0.73)' : '#FFCCCC' }]}>
               <Text style={styles.statusAmount}>Rs. {(statusTotals.remaining || 0).toLocaleString()}</Text>
               <Text style={styles.statusLabel}>Outstanding</Text>
             </RNView>
-            <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(255, 224, 178, 0.2)' : '#FFE0B2' }]}>
+            <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(255, 148, 33, 0.7)' : '#ffe0b2ff' }]}>
               <Text style={styles.statusAmount}>Rs. {(statusTotals.pending || 0).toLocaleString()}</Text>
               <Text style={styles.statusLabel}>Pending</Text>
             </RNView>
-            <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(200, 230, 201, 0.2)' : '#C8E6C9' }]}>
+            <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(51, 125, 254, 0.57)' : '#c4d9ffff' }]}>
               <Text style={styles.statusAmount}>Rs. {(statusTotals.received || 0).toLocaleString()}</Text>
-              <Text style={styles.statusLabel}>Received</Text>
+              <Text style={styles.statusLabel}>Available</Text>
             </RNView>
-            <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(227, 242, 253, 0.2)' : '#E3F2FD' }]}>
+            <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(83, 255, 49, 0.5)' : '#3ee14977' }]}>
               <Text style={styles.statusAmount}>Rs. {(statusTotals.spent || 0).toLocaleString()}</Text>
               <Text style={styles.statusLabel}>Spent</Text>
             </RNView>

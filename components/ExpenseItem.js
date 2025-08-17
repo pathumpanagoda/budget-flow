@@ -13,13 +13,28 @@ export default function ExpenseItem({
   style 
 }) {
   const { colors, isDarkMode } = useTheme();
+  // Map status to container background colors (aligned with dashboard status cards)
+  const getContainerBg = () => {
+    switch (status) {
+      case 'Outstanding':
+        return isDarkMode ? 'rgba(255, 39, 39, 0.63)' : '#FFCCCC';
+      case 'Pending':
+        return isDarkMode ? 'rgba(255, 166, 33, 0.7)' : '#FFE0B2';
+      case 'Received':
+        return isDarkMode ? 'rgba(51, 125, 254, 0.57)' : '#C4D9FF';
+      case 'Spent':
+        return isDarkMode ? 'rgba(83, 255, 49, 0.5)' : '#BAFFAC';
+      default:
+        return colors.card;
+    }
+  };
   
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <View style={[
         styles.container, 
         { 
-          backgroundColor: colors.card,
+          backgroundColor: getContainerBg(),
           shadowColor: isDarkMode ? '#000' : '#000',
           borderColor: colors.border,
         },

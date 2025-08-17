@@ -36,15 +36,15 @@ export default function BudgetSummary({
 
         <RNView style={[styles.budgetDetails, { borderTopColor: colors.border }]}> 
           <RNView style={styles.budgetDetailItem}>
-            <Text style={styles.budgetDetailLabel}>Total Received</Text>
-            <Text style={[styles.budgetDetailValue, { color: colors.success }]}> 
-              Rs. {totalReceived.toLocaleString()}
+            <Text style={styles.budgetDetailLabel}>Remaining</Text>
+            <Text style={[styles.budgetDetailValue, { color: "red" }]}> 
+              Rs. {remainingFund.toLocaleString()}
             </Text>
           </RNView>
           <RNView style={styles.budgetDetailItem}>
-            <Text style={styles.budgetDetailLabel}>Outstanding</Text>
-            <Text style={[styles.budgetDetailValue, { color: remainingFund >= 0 ? colors.primary : colors.error }]}> 
-              Rs. {remainingFund.toLocaleString()}
+            <Text style={styles.budgetDetailLabel}>Received</Text>
+            <Text style={[styles.budgetDetailValue, { color: colors.success }]}> 
+              Rs. {totalReceived.toLocaleString()}
             </Text>
           </RNView>
         </RNView>
