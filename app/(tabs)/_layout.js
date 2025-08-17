@@ -6,7 +6,7 @@ import { useTheme } from '../../context/theme'; // Make sure you import useTheme
 
 export default function TabsLayout() {
   const { isDarkMode } = useTheme(); // Get the current theme state
-  const tabBarActiveColor = '#0F6E66';
+  const tabBarActiveColor = '#64a12d';
   const tabBarInactiveColor = '#707070';
 
   return (
@@ -15,7 +15,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: tabBarActiveColor,
         tabBarInactiveTintColor: tabBarInactiveColor,
         headerStyle: {
-          backgroundColor: isDarkMode ? '#0F6E66' : '#0F6E66', // Use dark mode vs light mode colors
+          backgroundColor: isDarkMode ? '#64a12d' : '#64a12d', // Use dark mode vs light mode colors
         },
         headerTintColor: '#fff',
         headerTitleStyle: {

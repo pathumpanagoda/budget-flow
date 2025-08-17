@@ -5,7 +5,7 @@ import { ThemeProvider } from '../context/theme';
 import { ConfirmDialogProvider } from '../components/CustomConfirmDialog';
 
 export default function RootLayout() {
-  const tabBarActiveColor = '#0F6E66';
+  const tabBarActiveColor = '#64a12d';
   const tabBarInactiveColor = '#707070';
 
   return (
@@ -14,7 +14,7 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerStyle: {
-              backgroundColor: '#0F6E66',
+              backgroundColor: '#64a12d',
             },
             headerTintColor: '#fff',
           }}
@@ -27,7 +27,7 @@ export default function RootLayout() {
               title: 'New Expense',
               presentation: 'modal',
               headerStyle: {
-                backgroundColor: '#0F6E66',
+                backgroundColor: '#64a12d',
               },
               headerTintColor: '#fff',
             }} 
@@ -38,7 +38,7 @@ export default function RootLayout() {
               title: 'New Category',
               presentation: 'modal',
               headerStyle: {
-                backgroundColor: '#0F6E66',
+                backgroundColor: '#64a12d',
               },
               headerTintColor: '#fff',
             }} 
@@ -48,7 +48,7 @@ export default function RootLayout() {
             options={{ 
               title: 'Category Details',
               headerStyle: {
-                backgroundColor: '#0F6E66',
+                backgroundColor: '#64a12d',
               },
               headerTintColor: '#fff',
             }} 

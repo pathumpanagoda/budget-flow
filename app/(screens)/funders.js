@@ -91,7 +91,7 @@ export default function FundersScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0F6E66" />
+  <ActivityIndicator size="large" color="#64a12d" />
       </View>
     );
   }

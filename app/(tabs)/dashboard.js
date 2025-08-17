@@ -289,11 +289,11 @@ export default function DashboardScreen() {
         .header {
             text-align: center;
             margin-bottom: 30px;
-            border-bottom: 2px solid #0F6E66;
+            border-bottom: 2px solid #64a12d;
             padding-bottom: 20px;
         }
         .header h1 {
-            color: #0F6E66;
+            color: #64a12d;
             margin: 0;
             font-size: 24px;
         }
@@ -308,7 +308,7 @@ export default function DashboardScreen() {
         .section-title {
             font-size: 18px;
             font-weight: bold;
-            color: #0F6E66;
+            color: #64a12d;
             margin-bottom: 15px;
             border-bottom: 1px solid #eee;
             padding-bottom: 5px;
@@ -322,7 +322,7 @@ export default function DashboardScreen() {
             flex: 1;
         }
         .amount {
-            color: #0F6E66;
+            color: #64a12d;
             font-weight: bold;
             text-align: right;
         }
@@ -346,7 +346,7 @@ export default function DashboardScreen() {
         }
         th {
             background-color: #f8f8f8;
-            color: #0F6E66;
+            color: #64a12d;
         }
         .category-section {
             margin-top: 20px;

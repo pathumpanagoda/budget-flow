@@ -61,27 +61,27 @@ export default function SettingsScreen() {
       <Card style={styles.optionsCard}>
         <RNView style={styles.settingItem}>
           <RNView style={styles.settingTextContainer}>
-            <MaterialIcons name="notifications" size={24} color="#0F6E66" />
+              <MaterialIcons name="notifications" size={24} color="#64a12d" />
             <Text style={styles.settingText}>Notifications</Text>
           </RNView>
           <Switch
             value={notifications}
             onValueChange={setNotifications}
             trackColor={{ false: '#E0E0E0', true: '#C8E6C9' }}
-            thumbColor={notifications ? '#0F6E66' : '#9E9E9E'}
+              thumbColor={notifications ? '#64a12d' : '#9E9E9E'}
           />
         </RNView>
 
         <RNView style={styles.settingItem}>
           <RNView style={styles.settingTextContainer}>
-            <MaterialIcons name="dark-mode" size={24} color="#0F6E66" />
+              <MaterialIcons name="dark-mode" size={24} color="#64a12d" />
             <Text style={styles.settingText}>Dark Mode</Text>
           </RNView>
           <Switch
             value={isDarkMode}
             onValueChange={toggleTheme}
             trackColor={{ false: '#E0E0E0', true: '#C8E6C9' }}
-            thumbColor={isDarkMode ? '#0F6E66' : '#9E9E9E'}
+              thumbColor={isDarkMode ? '#64a12d' : '#9E9E9E'}
           />
         </RNView>
       </Card>
@@ -89,7 +89,7 @@ export default function SettingsScreen() {
       <Card style={styles.optionsCard}>
   <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/help')}>
           <RNView style={styles.menuTextContainer}>
-            <MaterialIcons name="help-outline" size={24} color="#0F6E66" />
+              <MaterialIcons name="help-outline" size={24} color="#64a12d" />
             <Text style={styles.menuText}>Help & Support</Text>
           </RNView>
           <MaterialIcons name="chevron-right" size={24} color="#9E9E9E" />
@@ -97,7 +97,7 @@ export default function SettingsScreen() {
 
   <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/about')}>
           <RNView style={styles.menuTextContainer}>
-            <MaterialIcons name="info-outline" size={24} color="#0F6E66" />
+              <MaterialIcons name="info-outline" size={24} color="#64a12d" />
             <Text style={styles.menuText}>About</Text>
           </RNView>
           <MaterialIcons name="chevron-right" size={24} color="#9E9E9E" />
@@ -116,11 +116,11 @@ export default function SettingsScreen() {
       <Card style={styles.optionsCard}>
         <Text style={styles.devHeader}>Developer</Text>
         <RNView style={styles.devRow}>
-          <MaterialIcons name="person" size={22} color="#0F6E66" />
+            <MaterialIcons name="person" size={22} color="#64a12d" />
           <Text style={styles.devText}>Dilshan Pathum</Text>
         </RNView>
         <TouchableOpacity style={styles.devRow} onPress={() => Linking.openURL('mailto:pathumpanagoda@gmail.com')}>
-          <MaterialIcons name="email" size={22} color="#0F6E66" />
+            <MaterialIcons name="email" size={22} color="#64a12d" />
           <Text style={[styles.devText, styles.devLink]}>pathumpanagoda@gmail.com</Text>
         </TouchableOpacity>
       </Card>
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#0F6E66',
+      backgroundColor: '#64a12d',
     justifyContent: 'center',
     alignItems: 'center',
   },

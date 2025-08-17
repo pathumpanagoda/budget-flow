@@ -45,7 +45,7 @@ export function ThemeProvider({ children }) {
     colors: {
       background: isDarkMode ? '#000000' : '#ffffff',
       text: isDarkMode ? '#ffffff' : '#000000',
-      primary: '#0F6E66',
+  primary: '#64a12d',
       secondary: isDarkMode ? '#2C2C2C' : '#f7f7f7',
       border: isDarkMode ? '#2C2C2C' : '#E0E0E0',
       card: isDarkMode ? '#121212' : '#ffffff',
