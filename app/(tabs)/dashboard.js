@@ -78,7 +78,7 @@ export default function DashboardScreen() {
       };
       
       expensesData.forEach(expense => {
-        if (expense.status === 'Remaining') {
+        if (expense.status === 'Outstanding') {
           counts.remaining += 1;
           amounts.remaining += expense.amount;
         } else if (expense.status === 'Pending') {
@@ -291,7 +291,7 @@ export default function DashboardScreen() {
                 <td class="amount">Rs. ${budgetSummary.receivedFund.toLocaleString()}</td>
             </tr>
             <tr>
-                <td>Remaining Fund</td>
+                <td>Outstanding Fund</td>
                 <td class="amount">Rs. ${(budgetSummary.totalBudget - budgetSummary.receivedFund).toLocaleString()}</td>
             </tr>
         </table>
@@ -306,7 +306,7 @@ export default function DashboardScreen() {
                 <th>Amount</th>
             </tr>
             <tr>
-                <td>Remaining</td>
+                <td>Outstanding</td>
                 <td>${statusCounts.remaining}</td>
                 <td class="amount">Rs. ${statusAmounts.remaining.toLocaleString()}</td>
             </tr>
@@ -451,8 +451,7 @@ export default function DashboardScreen() {
       <BudgetSummary
         totalBudget={budgetSummary.totalBudget}
         receivedFund={budgetSummary.receivedFund}
-        remainingFund={budgetSummary.remainingFund}
-        peopleOverFund={budgetSummary.peopleOverFund}
+        spent={statusAmounts.spent}
       />
       
       <Card style={styles.card}>
@@ -470,12 +469,12 @@ export default function DashboardScreen() {
       <Card style={styles.card}>
         <Text style={styles.sectionTitle}>Expense Status</Text>
         <RNView style={styles.statusCardsContainer}>
-          <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
+          <RNView style={[styles.statusCard, { backgroundColor: '#ffcccc' }]}>
             <Text style={styles.statusNumber}>{statusCounts.remaining}</Text>
-            <Text style={styles.statusLabel}>Remaining</Text>
+            <Text style={styles.statusLabel}>Outstanding</Text>
             <Text style={styles.statusAmount}>Rs. {statusAmounts.remaining.toLocaleString()}</Text>
           </RNView>
-          <RNView style={[styles.statusCard, { backgroundColor: colors.card }]}>
+          <RNView style={[styles.statusCard, { backgroundColor: '#ffe5b4' }]}>
             <Text style={styles.statusNumber}>{statusCounts.pending}</Text>
             <Text style={styles.statusLabel}>Pending</Text>
             <Text style={styles.statusAmount}>Rs. {statusAmounts.pending.toLocaleString()}</Text>

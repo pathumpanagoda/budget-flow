@@ -60,7 +60,7 @@ export default function HomeScreen() {
       };
       
       expensesData.forEach(expense => {
-        if (expense.status === 'Remaining') {
+        if (expense.status === 'Outstanding') {
           totals.remaining += expense.amount;
         } else if (expense.status === 'Pending') {
           totals.pending += expense.amount;
@@ -130,6 +130,7 @@ export default function HomeScreen() {
         <BudgetSummary
           totalBudget={budgetSummary.totalBudget}
           receivedFund={budgetSummary.receivedFund}
+          spent={statusTotals.spent}
         />
         
         <Card style={styles.sectionCard}>
@@ -139,7 +140,7 @@ export default function HomeScreen() {
           <RNView style={styles.statusCardsContainer}>
             <RNView style={[styles.statusCard, { backgroundColor: colors.border }]}>
               <Text style={styles.statusAmount}>Rs. {(statusTotals.remaining || 0).toLocaleString()}</Text>
-              <Text style={styles.statusLabel}>Remaining</Text>
+              <Text style={styles.statusLabel}>Outstanding</Text>
             </RNView>
             <RNView style={[styles.statusCard, { backgroundColor: isDarkMode ? 'rgba(255, 224, 178, 0.2)' : '#FFE0B2' }]}>
               <Text style={styles.statusAmount}>Rs. {(statusTotals.pending || 0).toLocaleString()}</Text>

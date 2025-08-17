@@ -74,9 +74,9 @@ export default function AllExpensesScreen() {
             style={styles.filterButton}
           />
           <Button
-            title="Remaining"
-            onPress={() => setStatusFilter('Remaining')}
-            variant={statusFilter === 'Remaining' ? 'primary' : 'outline'}
+            title="Outstanding"
+            onPress={() => setStatusFilter('Outstanding')}
+            variant={statusFilter === 'Outstanding' ? 'primary' : 'outline'}
             style={styles.filterButton}
           />
           <Button

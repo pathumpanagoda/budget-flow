@@ -18,7 +18,7 @@ export default function EditExpenseScreen() {
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [funderId, setFunderId] = useState('');
-  const [status, setStatus] = useState('Remaining');
+  const [status, setStatus] = useState('Outstanding');
   const [notes, setNotes] = useState('');
   const [categories, setCategories] = useState([]);
   const [funders, setFunders] = useState([]);
@@ -278,7 +278,7 @@ export default function EditExpenseScreen() {
               onValueChange={(itemValue) => setStatus(itemValue)}
               style={[styles.picker, { color: colors.text }]}
             >
-              <Picker.Item label="Remaining" value="Remaining" />
+              <Picker.Item label="Outstanding" value="Outstanding" />
               <Picker.Item label="Pending" value="Pending" />
               <Picker.Item label="Received" value="Received" />
               <Picker.Item label="Spent" value="Spent" />
